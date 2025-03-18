@@ -2,12 +2,10 @@
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\CommentController;
-use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\TagController;
+use App\Http\Controllers\ThreadController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -21,14 +19,14 @@ Route::prefix('admin')->group(function () {
 
     Route::resource('tags', TagController::class);
     
-    Route::resource('users', UserController::class);    
-
-    
-
-   
+    Route::resource('users', UserController::class);       
 });
 
     Route::resource('communities', CommunityController::class);
+
+
+    Route::resource('threads', ThreadController::class);
+
 
     Route::get('/register', [AuthController::class, 'registerForm'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);

@@ -2,8 +2,9 @@
 
 namespace App\Repositories;
 
-use App\CommunityRepositoryInterface;
+
 use App\Models\Community;
+use App\Repositories\Interfaces\CommunityRepositoryInterface;
 
 class CommunityRepository implements CommunityRepositoryInterface
 {

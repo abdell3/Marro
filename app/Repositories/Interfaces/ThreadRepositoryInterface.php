@@ -2,7 +2,7 @@
 
 namespace App\Repositories\Interfaces;
 
-interface CommunityRepositoryInterface 
+interface ThreadRepositoryInterface
 {
     public function all();
     public function find($id);
