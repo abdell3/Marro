@@ -11,7 +11,7 @@ class StorePostRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,15 @@ class StorePostRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'title' => 'required|string|max:255',
+            'type' => 'required|in:text,image,video', 
+            'content' => 'nullable|string',
+            'file_path' => 'nullable|file|mimes:jpg,jpeg,png,mp4,mov,avi|max:10240', 
+            'user_id' => 'required|exists:users,id',
+            'thread_id' => 'nullable|exists:threads,id',
+            'community_id' => 'required|exists:communities,id',
+            'tags' => 'nullable|array',
+            'tags.*' => 'exists:tags,id',
         ];
     }
 }
