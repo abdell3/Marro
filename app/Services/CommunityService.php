@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\CommunityRepositoryInterface;
+use App\Repositories\Interfaces\CommunityRepositoryInterface;
 
 class CommunityService
 {
