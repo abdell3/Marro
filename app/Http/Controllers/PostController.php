@@ -36,7 +36,7 @@ class PostController extends Controller
             // ->orderBy($orderBy, $orderDirection) 
             ->getAllPosts($perPage); 
 
-        return view('post.index', compact('posts'));
+        return view('posts.index', compact('posts'));
     }
     
     /**
@@ -44,7 +44,7 @@ class PostController extends Controller
      */
     public function create()
     {
-        return view('post.create');
+        return view('posts.create');
     }
 
     /**
@@ -55,7 +55,7 @@ class PostController extends Controller
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $path = $file->store('post', 'view'); 
+            $path = $file->store('posts', 'view'); 
             $request['file_path'] = $path; 
         }
 
@@ -69,7 +69,7 @@ class PostController extends Controller
 
 
 
-        return redirect()->route('post.index');
+        return redirect()->route('posts.index');
     }
 
     /**
@@ -78,7 +78,7 @@ class PostController extends Controller
     public function show($id)
     {
         $post = $this->postService->getPostById($id);
-        return view('post.show', compact('post'));
+        return view('posts.show', compact('post'));
     }
 
     /**
@@ -86,7 +86,7 @@ class PostController extends Controller
      */
     public function edit(Post $post)
     {
-        return view('post.update', compact('post'));
+        return view('posts.update', compact('post'));
     }
 
     /**
@@ -99,7 +99,7 @@ class PostController extends Controller
         if (isset($request['tags'])) {
             $post->tags()->sync($request['tags']);
         }
-        return redirect()->route('post.index');
+        return redirect()->route('posts.index');
     }
 
     /**
@@ -108,6 +108,6 @@ class PostController extends Controller
     public function destroy($postId)
     {
         $this->postService->deletePost($postId);
-        return redirect()->route('post.index');
+        return redirect()->route('posts.index');
     }
 }

@@ -4,7 +4,7 @@
 <div class="container">
     <h1>Créer un nouveau post</h1>
 
-    <form action="{{ route('post.store') }}" method="POST">
+    <form action="{{ route('posts.store') }}" method="POST">
         @csrf
 
         <div class="form-group">

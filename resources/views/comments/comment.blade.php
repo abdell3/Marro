@@ -27,7 +27,7 @@
         @if ($comment->replies->count() > 0)
             <div class="ml-4 mt-2">
                 @foreach ($comment->replies as $reply)
-                    @include('comments._comment', ['comment' => $reply])
+                    @include('comments.comment', ['comment' => $reply])
                 @endforeach
             </div>
         @endif

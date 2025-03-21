@@ -2,6 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\Community;
+use App\Models\Thread;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -14,10 +17,16 @@ class ThreadFactory extends Factory
      *
      * @return array<string, mixed>
      */
+
+    protected $model = Thread::class;
+
     public function definition(): array
     {
         return [
-            //
+            'title' => $this->faker->sentence,
+            'content' => $this->faker->paragraphs(3, true),
+            'user_id' => User::factory(),
+            'community_id' => Community::factory(),
         ];
     }
 }

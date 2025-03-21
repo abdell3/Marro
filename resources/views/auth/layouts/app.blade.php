@@ -16,7 +16,7 @@
         <div class="max-w-6xl mx-auto px-4">
             <div class="flex justify-between items-center py-4">
                 <div class="text-lg font-semibold">
-                    <a href="/" class="text-blue-500 hover:text-blue-700">Morro</a>
+                    <a href="/" class="text-blue-500 hover:text-blue-700">Marro</a>
                 </div>
                 <div class="flex items-center">
                     @if (Auth::check())
