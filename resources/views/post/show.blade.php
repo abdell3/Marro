@@ -20,6 +20,21 @@
         </div>
     </div>
 
+    <!-- <h3>Commentaires</h3>
+    @foreach ($post->comments as $comment)
+        @include('comments._comment', ['comment' => $comment])
+    @endforeach
+
+    
+    <form action="{{ route('comments.store') }}" method="POST" class="mt-4">
+        @csrf
+        <input type="hidden" name="post_id" value="{{ $post->id }}">
+        <div class="form-group">
+            <textarea name="content" class="form-control" rows="3" placeholder="Ajouter un commentaire..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary mt-2">Commenter</button>
+    </form> -->
+
     
     <h3>Commentaires</h3>
     @foreach ($post->comments as $comment)
