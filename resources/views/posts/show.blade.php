@@ -20,9 +20,9 @@
         </div>
     </div>
 
-    <!-- <h3>Commentaires</h3>
+    <h3>Commentaires</h3>
     @foreach ($post->comments as $comment)
-        @include('comments._comment', ['comment' => $comment])
+        @include('comments.comment', ['comment' => $comment])
     @endforeach
 
     
@@ -33,10 +33,10 @@
             <textarea name="content" class="form-control" rows="3" placeholder="Ajouter un commentaire..." required></textarea>
         </div>
         <button type="submit" class="btn btn-primary mt-2">Commenter</button>
-    </form> -->
+    </form>
 
     
-    <h3>Commentaires</h3>
+    <!-- <h3>Commentaires</h3>
     @foreach ($post->comments as $comment)
         <div class="card mb-2">
             <div class="card-body">
@@ -48,9 +48,9 @@
                 </p>
             </div>
         </div>
-    @endforeach
+    @endforeach -->
 
     
-    <a href="{{ route('post.index') }}" class="btn btn-secondary mt-3">Retour à la liste</a>
+    <a href="{{ route('posts.index') }}" class="btn btn-secondary mt-3">Retour à la liste</a>
 </div>
 @endsection
