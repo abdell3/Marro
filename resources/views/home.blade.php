@@ -44,7 +44,7 @@
                 <div class="card-body">
                     <h5 class="card-title">Communautés populaires</h5>
                     <ul class="list-group">
-                        @foreach ($popularCommunities as $community)
+                        @foreach ($communities as $community)
                             <li class="list-group-item">
                                 <a href="#">{{ $community->name }}</a>
                             </li>
