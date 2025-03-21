@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Repositories\Interfaces\CommunityRepositoryInterface;
+use App\Repositories\CommunityRepository;
 
 class CommunityService
 {
@@ -11,7 +11,7 @@ class CommunityService
      */
     protected $communityRepository;
 
-    public function __construct(CommunityRepositoryInterface $communityRepository)
+    public function __construct(CommunityRepository $communityRepository)
     {
         $this->communityRepository = $communityRepository;
     }

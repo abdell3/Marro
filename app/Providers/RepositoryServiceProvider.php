@@ -31,7 +31,7 @@ class RepositoryServiceProvider extends ServiceProvider
             CommunityRepository::class
         );
         $this->app->bind(CommunityService::class, function ($app){
-            return new CommunityService($app->make(PostRepositoryInterface::class));
+            return new CommunityService($app->make(CommunityRepositoryInterface::class));
         });
 
 
