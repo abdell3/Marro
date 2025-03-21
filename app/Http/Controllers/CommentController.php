@@ -5,12 +5,21 @@ namespace App\Http\Controllers;
 use App\Models\Comment;
 use App\Http\Requests\StoreCommentRequest;
 use App\Http\Requests\UpdateCommentRequest;
+use App\Services\CommentService;
 
 class CommentController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+
+    protected $commentService;
+
+
+    public function __construct(CommentService $commentService)
+    {
+        $this->commentService = $commentService;
+    }
     public function index()
     {
         //
@@ -29,7 +38,9 @@ class CommentController extends Controller
      */
     public function store(StoreCommentRequest $request)
     {
-        //
+
+        $this->commentService->createComment($request->validated());
+        return redirect()->back();
     }
 
     /**
@@ -59,8 +70,9 @@ class CommentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Comment $comment)
+    public function destroy($id)
     {
-        //
+        $this->commentService->deleteComment($id);
+        return redirect()->back();
     }
 }
