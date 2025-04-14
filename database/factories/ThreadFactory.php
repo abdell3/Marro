@@ -18,15 +18,15 @@ class ThreadFactory extends Factory
      * @return array<string, mixed>
      */
 
-    protected $model = Thread::class;
+    // protected $model = Thread::class;
 
     public function definition(): array
     {
         return [
-            'title' => $this->faker->sentence,
-            'content' => $this->faker->paragraphs(3, true),
-            'user_id' => User::factory(),
-            'community_id' => Community::factory(),
+            // 'title' => $this->faker->sentence,
+            // 'content' => $this->faker->paragraphs(3, true),
+            // 'user_id' => User::factory(),
+            // 'community_id' => Community::factory(),
         ];
     }
 }

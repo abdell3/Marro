@@ -5,41 +5,17 @@ namespace App\Repositories;
 use App\Models\Thread;
 use App\Repositories\Interfaces\ThreadRepositoryInterface;
 
-class ThreadRepository implements ThreadRepositoryInterface
+class ThreadRepository extends BaseRepository implements ThreadRepositoryInterface
 {
-    protected $thread;
-
-    public function __construct(Thread $thread)
+    public function __construct(Thread $model)
     {
-        $this->thread = $thread;
+        parent::__construct($model);
     }
 
-    public function all()
+    public function findByCommunity($communityId)
     {
-        return $this->thread->all();
-    }
-
-    public function find($id)
-    {
-        return $this->thread->findOrFail($id);
-    }
-
-    public function create(array $data)
-    {
-        return $this->thread->create($data);
-    }
-
-    public function update($id, array $data)
-    {
-        $thread = $this->thread->findOrFail($id);
-        $thread->update($data);
-        return $thread;
-    }
-
-    public function delete($id)
-    {
-        $thread = $this->thread->findOrFail($id);
-        $thread->delete();
-        return $thread;
+        return $this->model->where('community_id', $communityId)
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
     }
 }

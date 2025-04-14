@@ -6,6 +6,8 @@ use App\Models\Community;
 use App\Http\Requests\StoreCommunityRequest;
 use App\Http\Requests\UpdateCommunityRequest;
 use App\Services\CommunityService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CommunityController extends Controller
 {
@@ -19,13 +21,21 @@ class CommunityController extends Controller
     public function __construct(CommunityService $communityService)
     {
         $this->communityService = $communityService;
+        $this->middleware('auth')->except(['index', 'show']);
     }
 
 
-    public function index()
+    public function index(Request $request)
     {
-        $communities = $this->communityService->getAllCommunities();
-        return view('communities.index', compact('communities'));
+        if($request->has('popular')) {
+            $communities = $this->communityService->getPopularCommunities();
+        }elseif($request->has('search')) {
+            $communities = $this->communityService->searchCommunities($request->search);
+        }else{
+            $communities = $this->communityService->getAllCommunities(10);
+        }
+
+        return view('communities.index', compact('communities'));   
     }
 
     /**
@@ -33,7 +43,7 @@ class CommunityController extends Controller
      */
     public function create()
     {
-        
+        return view('communities.create');
     }
 
     /**
@@ -41,32 +51,30 @@ class CommunityController extends Controller
      */
     public function store(StoreCommunityRequest $request)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255|unique:communities',
-            'slug' => 'required|string|max:255|unique:communities',
-            'description' => 'nullable|string',
-            'user_id' => 'required|exists:users,id',
-        ]);
-
-        $this->communityService->createCommunity($data);
-        return redirect()->route('communities.index');
+        $community = $this->communityService->createCommunity($request->validated());
+        return redirect()->route('communities.show', $community->slug)->with(
+            'success', 
+            'Community created successfully.'
+        );
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Community $community, $id)
+    public function show($slug)
     {
-        $community = $this->communityService->getCommunityById($id);
+        $community = $this->communityService->getCommunityBySlug($slug);
         return view('communities.show', compact('community'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Community $community)
+    public function edit($id)
     {
-        //
+        $community = $this->communityService->getCommunityById($id);
+        $this->authorize('update', $community);
+        return view('communities.edit', compact('community'));
     }
 
     /**
@@ -74,15 +82,21 @@ class CommunityController extends Controller
      */
     public function update(UpdateCommunityRequest $request, $id)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255|unique:communities,name,' . $id,
-            'slug' => 'required|string|max:255|unique:communities,slug,' . $id,
-            'description' => 'nullable|string',
-            'user_id' => 'required|exists:users,id',
-        ]);
+        $community = $this->communityService->getCommunityById($id);
+        $this->authorize(
+            'update', 
+            $community
+        );
 
-        $this->communityService->updateCommunity($id, $data);
-        return redirect()->route('communities.index');
+        $this->communityService->updateCommunity(
+            $id, 
+            $request->validated()
+        );
+
+        return redirect()->route('communities.show', $community->slug)->with(
+            'success', 
+            'Community updated successfully.'
+        );
     }
 
     /**
@@ -90,8 +104,26 @@ class CommunityController extends Controller
      */
     public function destroy($id)
     {
+        $community = $this->communityService->getCommunityById($id);
+        $this->authorize('delete', $community);
         $this->communityService->deleteCommunity($id);
-        return redirect()->route('communities.index');
+        return redirect()->route('communities.index')->with('success', 'Community deleted successfully.');
     }
+
+
+    public function join($id)
+    {
+        $this->communityService->joinCommunity($id, Auth::id());
+        return back()->with('success', 'Joined community successfully.');
+    }
+
+
+    public function leave($id)
+    {
+        $this->communityService->leaveCommunity($id, Auth::id());
+        return back()->with('success', 'Left community successfully.');
+    }
+
+    
 }
 

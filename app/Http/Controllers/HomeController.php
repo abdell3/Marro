@@ -20,13 +20,15 @@ class HomeController extends Controller
 
     public function index(Request $request)
     {
-        $perPage = $request->input('per_page', 10); 
+        $perPage = $request->input('per_page', 10);
+        
+        
         $posts = $this->postService
             ->getAllPosts($perPage);
 
 
         $communities = $this->communityService
-            ->getAllCommunities();
+            ->getAllCommunities($perPage);
             
 
 

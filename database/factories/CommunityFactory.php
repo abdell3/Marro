@@ -17,15 +17,15 @@ class CommunityFactory extends Factory
      * @return array<string, mixed>
      */
 
-    protected $model = Community::class;
+    // protected $model = Community::class;
 
     public function definition(): array
     {
         return [
-            'name' => $this->faker->unique()->word, 
-            'slug' => $this->faker->unique()->slug, 
-            'description' => $this->faker->paragraph, 
-            'user_id' => User::factory(),
+            // 'name' => $this->faker->unique()->word, 
+            // 'slug' => $this->faker->unique()->slug, 
+            // 'description' => $this->faker->paragraph, 
+            // 'user_id' => User::factory(),
         ];
     }
 }

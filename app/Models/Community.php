@@ -12,20 +12,26 @@ class Community extends Model
 
     protected $fillable = [
         'name',
-        'slug',
         'description',
-        'user_id',
+        'rules',
+        'banner',
+        'icon',
+        'slug',
     ];
 
-    public function user()
+    public function users()
     {
-        return $this->hasMany(User::class);
+        return $this->belongsToMany(User::class, 'community_user');
     }
-
 
     public function posts()
     {
         return $this->hasMany(Post::class);
+    }
+
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class, 'community_tag');
     }
 
 

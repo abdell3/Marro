@@ -11,7 +11,7 @@ class StoreCommunityRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,11 @@ class StoreCommunityRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => 'required|string|max:255|unique:communities',
+            'description' => 'required|string',
+            'rules' => 'nullable|string',
+            'banner' => 'nullable|image|max:2048',
+            'icon' => 'nullable|image|max:2048',
         ];
     }
 }

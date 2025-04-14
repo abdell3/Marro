@@ -1,60 +1,57 @@
-@extends('layouts.app')
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Edit Post') }}
+        </h2>
+    </x-slot>
 
-@section('content')
-<div class="container">
-    <h1>Modifier le post</h1>
-
-    <form action="{{ route('posts.update', $post->id) }}" method="POST">
-        @csrf
-        @method('PUT')
-
-        <div class="form-group">
-            <label for="title">Titre</label>
-            <input type="text" name="title" id="title" class="form-control" value="{{ $post->title }}" required>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 bg-white border-b border-gray-200">
+                    <form action="{{ route('posts.update', $post->id) }}" method="POST">
+                        @csrf
+                        @method('PUT')
+                        
+                        <div class="mb-4">
+                            <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                            <input type="text" id="title" name="title" value="{{ old('title', $post->title) }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                            @error('title')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="content" class="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                            <textarea id="content" name="content" rows="8" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">{{ old('content', $post->content) }}</textarea>
+                            @error('content')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="tags" class="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+                            <select id="tags" name="tags[]" multiple class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                                @foreach(\App\Models\Tag::all() as $tag)
+                                    <option value="{{ $tag->id }}" {{ $post->tags->contains($tag->id) ? 'selected' : '' }}>
+                                        {{ $tag->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="text-gray-500 text-xs mt-1">Hold Ctrl (or Cmd) to select multiple tags</p>
+                        </div>
+                        
+                        <div class="flex justify-end">
+                            <a href="{{ route('posts.show', $post->id) }}" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 mr-2">
+                                Cancel
+                            </a>
+                            <button type="submit" class="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">
+                                Update Post
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-
-        <div class="form-group">
-            <label for="content">Contenu</label>
-            <textarea name="content" id="content" class="form-control" rows="5" required>{{ $post->content }}</textarea>
-        </div>
-
-        <div class="form-group">
-            <label for="type">Type de post</label>
-            <select name="type" id="type" class="form-control" required>
-                <option value="text" {{ $post->type === 'text' ? 'selected' : '' }}>Texte</option>
-                <option value="image" {{ $post->type === 'image' ? 'selected' : '' }}>Image</option>
-                <option value="video" {{ $post->type === 'video' ? 'selected' : '' }}>Vidéo</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="file_path">Fichier (URL ou chemin)</label>
-            <input type="text" name="file_path" id="file_path" class="form-control" value="{{ $post->file_path }}">
-        </div>
-
-        <div class="form-group">
-            <label for="community_id">Communauté</label>
-            <select name="community_id" id="community_id" class="form-control" required>
-                @foreach ($communities as $community)
-                    <option value="{{ $community->id }}" {{ $post->community_id === $community->id ? 'selected' : '' }}>
-                        {{ $community->name }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="tags">Tags</label>
-            <select name="tags[]" id="tags" class="form-control" multiple>
-                @foreach ($tags as $tag)
-                    <option value="{{ $tag->id }}" {{ in_array($tag->id, $post->tags->pluck('id')->toArray()) ? 'selected' : '' }}>
-                        {{ $tag->name }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Mettre à jour</button>
-    </form>
-</div>
-@endsection
+    </div>
+</x-app-layout> 

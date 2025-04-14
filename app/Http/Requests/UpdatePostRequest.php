@@ -23,13 +23,8 @@ class UpdatePostRequest extends FormRequest
     {
         return [
             'title' => 'required|string|max:255',
-            'type' => 'required|in:text,image,video', 
-            'content' => 'nullable|string', 
-            'file_path' => 'nullable|string', 
-            'user_id' => 'required|exists:users,id',
-            'thread_id' => 'nullable|exists:threads,id',
-            'community_id' => 'required|exists:communities,id',
-            'tags' => 'nullable|array', 
+            'content' => 'required|string',
+            'tags' => 'nullable|array',
             'tags.*' => 'exists:tags,id',
         ];
     }

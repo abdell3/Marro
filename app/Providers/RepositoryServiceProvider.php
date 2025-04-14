@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Repositories\BaseRepository;
 use App\Repositories\CommentRepository;
 use App\Repositories\Interfaces\CommunityRepositoryInterface;
 use App\Repositories\Interfaces\PostRepositoryInterface;
@@ -9,11 +10,16 @@ use App\Repositories\Interfaces\TagRepositoryInterface;
 use App\Repositories\Interfaces\ThreadRepositoryInterface;
 use App\Repositories\CommunityRepository;
 use App\Repositories\Interfaces\CommentRepositoryInterface;
+use App\Repositories\Interfaces\PermissionRepositoryInterface;
+use App\Repositories\Interfaces\RepositoryInterface;
+use App\Repositories\Interfaces\RoleRepositoryInterface;
+use App\Repositories\PermissionRepository;
 use App\Repositories\PostRepository;
 use App\Repositories\TagRepository;
 use App\Repositories\ThreadRepository;
 use App\Services\CommentService;
 use App\Services\CommunityService;
+use App\Services\PermissionService;
 use App\Services\PostService;
 use App\Services\TagService;
 use App\Services\ThreadService;
@@ -75,8 +81,29 @@ class RepositoryServiceProvider extends ServiceProvider
             CommentRepository::class
         );
         $this->app->bind(CommentService::class, function ($app){
-            return new CommentService($app->mak(CommentRepositoryInterface::class));
+            return new CommentService($app->make(CommentRepositoryInterface::class));
         });
+
+
+
+        $this->app->bind(
+            PermissionRepositoryInterface::class,
+            PermissionRepository::class
+        );
+        $this->app->bind(PermissionService::class, function ($app){
+            return new PermissionService($app->make(PermissionRepositoryInterface::class), $app->make(PermissionRepositoryInterface::class));
+        });
+
+
+        $this->app->bind(
+            RepositoryInterface::class,
+            BaseRepository::class
+        );
+
+
+
+
+
     }
     
     /**

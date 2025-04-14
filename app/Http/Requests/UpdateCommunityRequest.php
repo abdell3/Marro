@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateCommunityRequest extends FormRequest
 {
@@ -11,7 +13,7 @@ class UpdateCommunityRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +24,16 @@ class UpdateCommunityRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('communities')->ignore($this->route('community')),
+            ],
+            'description' => 'required|string',
+            'rules' => 'nullable|string',
+            'banner' => 'nullable|image|max:2048',
+            'icon' => 'nullable|image|max:2048',
         ];
     }
 }

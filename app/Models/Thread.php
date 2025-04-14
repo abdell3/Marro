@@ -12,8 +12,7 @@ class Thread extends Model
 
     protected $fillable = [
         'title',
-        'content',
-        'user_id',
+        'description',
         'community_id',
     ];
 
@@ -28,8 +27,10 @@ class Thread extends Model
         return $this->belongsTo(Community::class);
     }
 
-    public function comments()
+    public function posts()
     {
-        return $this->hasMany(Comment::class);
+        return $this->hasMany(Post::class);
     }
+
+    
 }
