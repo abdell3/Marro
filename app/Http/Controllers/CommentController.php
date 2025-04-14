@@ -2,77 +2,63 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Comment;
 use App\Http\Requests\StoreCommentRequest;
 use App\Http\Requests\UpdateCommentRequest;
-use App\Services\CommentService;
+use App\Models\Comment;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CommentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-
-    protected $commentService;
-
-
-    public function __construct(CommentService $commentService)
+    public function __construct()
     {
-        $this->commentService = $commentService;
-    }
-    public function index()
-    {
-        //
+        $this->middleware('auth');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreCommentRequest $request)
     {
+        $comment = Comment::create([
+            'content' => $request->content,
+            'user_id' => Auth::id(),
+            'post_id' => $request->post_id,
+            'parent_id' => $request->parent_id,
+        ]);
 
-        $this->commentService->createComment($request->validated());
-        return redirect()->back();
+        return redirect()->back()->with('success', 'Comment added successfully.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Comment $comment)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Comment $comment)
     {
-        //
+        $this->authorize('update', $comment);
+        return view('comments.edit', compact('comment'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateCommentRequest $request, Comment $comment)
     {
-        //
+        $this->authorize('update', $comment);
+        $comment->update($request->validated());
+        return redirect()->route('posts.show', $comment->post_id)->with('success', 'Comment updated successfully.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
+    public function destroy(Comment $comment)
     {
-        $this->commentService->deleteComment($id);
-        return redirect()->back();
+        $this->authorize('delete', $comment);
+        $postId = $comment->post_id;
+        $comment->delete();
+        return redirect()->route('posts.show', $postId)->with('success', 'Comment deleted successfully.');
+    }
+
+    public function upvote(Comment $comment)
+    {
+        $comment->upvotes += 1;
+        $comment->save();
+        return back();
+    }
+
+    public function downvote(Comment $comment)
+    {
+        $comment->downvotes += 1;
+        $comment->save();
+        return back();
     }
 }

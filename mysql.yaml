@@ -1,0 +1,12 @@
+name : marro
+services:
+  mysql:
+    image: 'mysql:latest'
+    container_name: db
+    environment:
+      - 'MYSQL_DATABASE=marro'
+      - 'MYSQL_PASSWORD=password'
+      - 'MYSQL_ROOT_PASSWORD=verysecretpassword'
+      - 'MYSQL_USER=abdou'
+    ports:
+      - '3306:3306'

@@ -18,12 +18,17 @@ class ThreadService
 
     public function getAllThreads()
     {
-        return $this->threadRepository->all();
+        return $this->threadRepository->paginate(10);
     }
 
     public function getThreadById($id)
     {
         return $this->threadRepository->find($id);
+    }
+
+    public function getThreadsByCommunity($communityId)
+    {
+        return $this->threadRepository->findByCommunity($communityId);
     }
 
     public function createThread(array $data)

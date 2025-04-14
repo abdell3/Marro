@@ -13,17 +13,17 @@ class Post extends Model
     protected $fillable = [
         'title',
         'content',
-        'type',
-        'file_path',
         'user_id',
-        'thread_id',
-        'community_id'
+        'community_id',
+        'upvotes',
+        'downvotes',
+        'is_pinned',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
+    }   
 
     public function thread()
     {
@@ -35,18 +35,33 @@ class Post extends Model
         return $this->belongsTo(Community::class);
     }
 
-    public function tags()
-    {
-        return $this->belongsToMany(Tag::class);
-    }
     
     public function comments()
     {
-        return $this->hasMany(Comment::class)->whereNull('parent_id');
+        return $this->hasMany(Comment::class);
     }
+
+
+    public function savedBy()
+    {
+        return $this->hasMany(SavedPost::class);
+    }
+
 
     public function reports()
     {
-        return $this->hasMany(Report::class);
+        return $this->morphMany(Report::class, 'reportable');
     }
+
+
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class, 'post_tag');
+    }
+
+    public function poll()
+    {
+        return $this->hasOne(Poll::class);
+    }
+
 }

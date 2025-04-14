@@ -22,7 +22,7 @@ class DashboardController extends Controller
         $totalUsers = User::count();
         $totalPosts = Post::count();
         $totalComments = Comment::count();
-        $totalCategories = Category::count();
+        
 
         
         $recentUsers = User::latest()->take(5)->get();
@@ -34,7 +34,6 @@ class DashboardController extends Controller
             'totalUsers',
             'totalPosts',
             'totalComments',
-            'totalCategories',
             'recentUsers',
             'recentPosts'
         ));
@@ -122,56 +121,30 @@ class DashboardController extends Controller
     /**
      *
      */
-    public function categories()
-    {
-        $categories = Category::latest()->paginate(10); 
-        return view('admin.categories.index', compact('categories'));
-    }
+    
 
     /**
      * 
      */
-    public function createCategory()
-    {
-        return view('admin.categories.create');
-    }
+    
 
     /**
      * 
      */
-    public function storeCategory(Request $request)
-    {
-        
-
-        Category::create($request->validated());
-        return redirect()->route('admin.categories.index')->with('success', 'Catégorie créée avec succès.');
-    }
+    
 
     /**
      * 
      */
-    public function editCategory(Category $category)
-    {
-        return view('admin.categories.edit', compact('category'));
-    }
 
     /**
      * 
      */
-    public function updateCategory(Request $request, Category $category)
-    {
-
-        $category->update($request->validated());
-        return redirect()->route('admin.categories.index')->with('success', 'Catégorie mise à jour avec succès.');
-    }
+    
 
     /**
      * 
      */
-    public function deleteCategory(Category $category)
-    {
-        $category->delete();
-        return back()->with('success', 'Catégorie supprimée avec succès.');
-    }
+    
 }
 

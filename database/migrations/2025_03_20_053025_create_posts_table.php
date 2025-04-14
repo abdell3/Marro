@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->text('content')->nullable();
-            $table->string('type')->default('text');
-            $table->string('file_path')->nullable();
+            $table->text('content');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('thread_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('community_id')->constrained()->onDelete('cascade');
+            $table->integer('upvotes')->default(0);
+            $table->integer('downvotes')->default(0);
+            $table->boolean('is_pinned')->default(false);
             $table->timestamps();
         });
     }

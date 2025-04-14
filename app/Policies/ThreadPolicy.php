@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Thread;
 use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Auth\Access\Response;
 
 class ThreadPolicy
@@ -11,56 +12,35 @@ class ThreadPolicy
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    use HandlesAuthorization;
+
+    public function update(User $user, Thread $thread)
     {
+        
+        if ($user->roles->where('name', 'Admin')->count() > 0) {
+            return true;
+        }
+
+        
+        if ($user->roles->where('name', 'Moderator')->count() > 0 && 
+            $user->communities->contains($thread->community_id)) {
+            return true;
+        }
+
         return false;
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Thread $thread): bool
+    public function delete(User $user, Thread $thread)
     {
-        return false;
-    }
+        if ($user->roles->where('name', 'Admin')->count() > 0) {
+            return true;
+        }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
-    {
-        return false;
-    }
+        if ($user->roles->where('name', 'Moderator')->count() > 0 && 
+            $user->communities->contains($thread->community_id)) {
+            return true;
+        }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Thread $thread): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Thread $thread): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Thread $thread): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Thread $thread): bool
-    {
         return false;
     }
 }

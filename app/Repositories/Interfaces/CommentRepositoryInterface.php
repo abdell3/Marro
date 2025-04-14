@@ -2,11 +2,9 @@
 
 namespace App\Repositories\Interfaces;
 
-interface CommentRepositoryInterface
+interface CommentRepositoryInterface extends RepositoryInterface
 {
-    public function allComments();
-    public function findComment($id);
-    public function createComment(array $data);
-    public function updateComment($id, array $data);
-    public function deleteComment($id);
+    public function findByPost($postId);
+    public function findByUser($userId);
+    public function findReplies($commentId);
 }

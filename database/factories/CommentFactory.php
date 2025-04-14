@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Comment>
  */
-class CommentFactory extends Factory
+// class CommentFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -19,15 +19,15 @@ class CommentFactory extends Factory
      * @return array<string, mixed>
      */
 
-    protected $model = Comment::class;
+    // protected $model = Comment::class;
 
-    public function definition(): array
-    {
-        return [
-            'content' => $this->faker->paragraph, 
-            'user_id' => User::factory(), 
-            'post_id' => Post::factory(), 
-            'parent_id' => null,
-        ];
-    }
+    // public function definition(): array
+    // {
+    //     return [
+    //         'content' => $this->faker->paragraph, 
+    //         'user_id' => User::factory(), 
+    //         'post_id' => Post::factory(), 
+    //         'parent_id' => null,
+    //     ];
+    // }
 }
