@@ -6,6 +6,8 @@ use App\Models\Role;
 use App\http\Middleware\CheckPermission;
 use App\Http\Requests\StoreRoleRequest;
 use App\Http\Requests\UpdateRoleRequest;
+use App\Services\PermissionService;
+use App\Services\RoleService;
 use Illuminate\Http\Request;
 
 class RoleController extends Controller
@@ -14,67 +16,67 @@ class RoleController extends Controller
      * Display a listing of the resource.
      */
 
-    protected $checkPermission;
-
-    
-     public function __construct(CheckPermission $checkPermission)
+     protected $roleService;
+     protected $permissionService;
+ 
+     public function __construct(RoleService $roleService, PermissionService $permissionService)
      {
-        $this->checkPermission = $checkPermission;
-         
-        // $this->middleware('auth')->except(['index', 'show']);
+         $this->roleService = $roleService;
+         $this->permissionService = $permissionService;
+         $this->middleware('auth');
+         $this->middleware('can:admin');
      }
-    
-    public function index()
-    {
-        $this->authorize('viewAny', Role::class);
-        return view('admin.roles.index', ['roles' => Role::with('permissions')->get()]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreRoleRequest $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Role $role)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Role $role)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateRoleRequest $request, Role $role)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Role $role)
-    {
-        //
-    }
+ 
+     public function index()
+     {
+         $roles = $this->roleService->getAllRoles();
+         return view('admin.roles.index', compact('roles'));
+     }
+ 
+     public function create()
+     {
+         $permissions = $this->permissionService->getAllPermissions();
+         return view('admin.roles.create', compact('permissions'));
+     }
+ 
+     public function store(StoreRoleRequest $request)
+     {
+         $role = $this->roleService->createRole($request->only(['name', 'description']));
+         
+         if ($request->has('permissions')) {
+             $this->roleService->assignPermissions($role->id, $request->permissions);
+         }
+         
+         return redirect()->route('admin.roles.index')->with('success', 'Role created successfully.');
+     }
+ 
+     public function show($id)
+     {
+         $role = $this->roleService->getRoleById($id);
+         return view('admin.roles.show', compact('role'));
+     }
+ 
+     public function edit($id)
+     {
+         $role = $this->roleService->getRoleById($id);
+         $permissions = $this->permissionService->getAllPermissions();
+         return view('admin.roles.edit', compact('role', 'permissions'));
+     }
+ 
+     public function update(UpdateRoleRequest $request, $id)
+     {
+         $this->roleService->updateRole($id, $request->only(['name', 'description']));
+         
+         if ($request->has('permissions')) {
+             $this->roleService->assignPermissions($id, $request->permissions);
+         }
+         
+         return redirect()->route('admin.roles.index')->with('success', 'Role updated successfully.');
+     }
+ 
+     public function destroy($id)
+     {
+         $this->roleService->deleteRole($id);
+         return redirect()->route('admin.roles.index')->with('success', 'Role deleted successfully.');
+     }
 }

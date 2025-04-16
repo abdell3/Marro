@@ -2,14 +2,12 @@
 
 namespace App\Repositories\Interfaces;
 
-interface TagRepositoryInterface
+interface TagRepositoryInterface extends RepositoryInterface
 {
     /**
      * Create a new class instance.
      */
-    public function all();
-    public function find($id);
-    public function create(array $data);
-    public function update($id, array $data);
-    public function delete($id);
+    public function findBySlug($slug);
+    public function findByName($name);
+    public function findOrCreateByName($name);
 }

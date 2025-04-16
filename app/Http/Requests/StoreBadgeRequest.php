@@ -11,7 +11,7 @@ class StoreBadgeRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,9 @@ class StoreBadgeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => 'required|string|max:255|unique:badges',
+            'description' => 'nullable|string',
+            'icon' => 'nullable|image|max:2048',
         ];
     }
 }

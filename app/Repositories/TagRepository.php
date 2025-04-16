@@ -4,48 +4,42 @@ namespace App\Repositories;
 
 use App\Models\Tag;
 use App\Repositories\Interfaces\TagRepositoryInterface;
+use Illuminate\Support\Str;
 
-class TagRepository implements TagRepositoryInterface
+class TagRepository extends BaseRepository implements TagRepositoryInterface
 
 {
     /**
      * Create a new class instance.
      */
-    protected $tag;
+    // protected $model;
 
-    
-
-    public function __construct(Tag $tag)
+    public function __construct(Tag $model)
     {
-        $this->tag = $tag;
+        parent::__construct($model);
     }
 
-    public function all()
+    public function findBySlug($slug)
     {
-        return $this->tag->all();
+        return $this->model->where('slug', $slug)->first();
     }
 
-    public function find($id)
+    public function findByName($name)
     {
-        return $this->tag->findOrFail($id);
+        return $this->model->where('name', $name)->first();
     }
 
-    public function create(array $data)
+    public function findOrCreateByName($name)
     {
-        return $this->tag->create($data);
-    }
-
-    public function update($id, array $data)
-    {
-        $tag = $this->tag->findOrFail($id);
-        $tag->update($data);
-        return $tag;
-    }
-
-    public function delete($id)
-    {
-        $tag = $this->tag->findOrFail($id);
-        $tag->delete();
+        $tag = $this->findByName($name);
+        
+        if (!$tag) {
+            $tag = $this->model->create([
+                'name' => $name,
+                'slug' => Str::slug($name)
+            ]);
+        }
+        
         return $tag;
     }
 }

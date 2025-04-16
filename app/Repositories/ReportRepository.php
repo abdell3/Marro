@@ -5,64 +5,43 @@ namespace App\Repositories;
 use App\Models\Report;
 use App\Repositories\Interfaces\ReportRepositoryInterface;
 
-class ReportRepository implements ReportRepositoryInterface
+class ReportRepository extends BaseRepository implements ReportRepositoryInterface
 {
     /**
      * Create a new class instance.
      */
-    public function __construct()
+    public function __construct(Report $model)
     {
-        
+        parent::__construct($model);
     }
 
-    function createReport(array $data)
+    public function findByUser($userId)
     {
-        $report = Report::create([
-            'reason' => $data['reason'],
-            'description' => $data['description'] ?? null,
-            'user_id' => $data['user_id'],
-            'reportable_type' => $data['reportable_type'],
-            'reportable_id' => $data['reportable_id'],
-        ]);
+        return $this->model->where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+    }
 
-        if (isset($data['types'])) {
-            $report->types()->sync($data['types']);
-        }
+    public function findByStatus($status)
+    {
+        return $this->model->where('status', $status)
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+    }
 
-        return $report;
-    }
-    function getPendingReports()
+    public function findByReportType($reportTypeId)
     {
-        return Report::pending()->with(['user', 'reportable', 'types'])->latest()->get();
+        return $this->model->where('report_type_id', $reportTypeId)
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
     }
-    function getReportById($reportId)
+
+    public function findByReportable($reportableType, $reportableId)
     {
-        return Report::with(['user', 'reportable', 'types', 'handler'])->findOrFail($reportId);
-    }
-    function getReportsByReportable($reportableType, $reportableId)
-    {
-        return Report::where('reportable_type', $reportableType)
+        return $this->model->where('reportable_type', $reportableType)
             ->where('reportable_id', $reportableId)
-            ->with(['user', 'types'])
-            ->latest()
+            ->orderBy('created_at', 'desc')
             ->get();
     }
-    function getUserReports($userId)
-    {
-        return Report::where('user_id', $userId)->with(['reportable', 'types'])->latest()->get();
-    }
-    function updateReportStatus($reportId, $status, $handlerId)
-    {
-        $report = Report::findOrFail($reportId);
-        
-        $report->update([
-            'status' => $status,
-            'handled_by' => $handlerId,
-            'handled_at' => now(),
-        ]);
-
-        return $report;
-    }
-
 
 }

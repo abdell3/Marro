@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateBadgeRequest extends FormRequest
 {
@@ -11,7 +12,7 @@ class UpdateBadgeRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +23,14 @@ class UpdateBadgeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('badges')->ignore($this->route('badge')),
+            ],
+            'description' => 'nullable|string',
+            'icon' => 'nullable|image|max:2048',
         ];
     }
 }

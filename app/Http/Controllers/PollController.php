@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\VotePollRequest;
 use App\Models\Poll;
 use App\Http\Requests\StorePollRequest;
 use App\Http\Requests\UpdatePollRequest;
@@ -39,11 +40,11 @@ class PollController extends Controller
             $request->expires_at
         );
         
-        return redirect()->route('posts.show', $request->post_id)
+        return redirect()->route('posts.show', $request->$poll)
             ->with('success', 'Poll created successfully.');
     }
 
-    public function vote(VotePollRequest $request, $id)
+    public function vote(VotePollRequest $request)
     {
         $option = PollOption::findOrFail($request->option_id);
         $poll = $option->poll;

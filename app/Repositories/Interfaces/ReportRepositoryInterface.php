@@ -2,12 +2,10 @@
 
 namespace App\Repositories\Interfaces;
 
-interface ReportRepositoryInterface
+interface ReportRepositoryInterface extends RepositoryInterface
 {
-    public function createReport(array $data);
-    public function updateReportStatus($reportId, $status, $handlerId);
-    public function getPendingReports();
-    public function getUserReports($userId);
-    public function getReportById($reportId);
-    public function getReportsByReportable($reportableType, $reportableId);
+    public function findByUser($userId);
+    public function findByStatus($status);
+    public function findByReportType($reportTypeId);
+    public function findByReportable($reportableType, $reportableId);
 }

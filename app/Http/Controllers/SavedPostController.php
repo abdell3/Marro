@@ -5,62 +5,51 @@ namespace App\Http\Controllers;
 use App\Models\SavedPost;
 use App\Http\Requests\StoreSavedPostRequest;
 use App\Http\Requests\UpdateSavedPostRequest;
+use App\Services\SavedPostService;
+use Illuminate\Http\Request;
 
 class SavedPostController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+    protected $savedPostService;
+
+    public function __construct(SavedPostService $savedPostService)
+    {
+        $this->savedPostService = $savedPostService;
+        $this->middleware('auth');
+    }
+
     public function index()
     {
-        //
+        $savedPosts = $this->savedPostService->getSavedPostsByUser();
+        return view('saved-posts.index', compact('savedPosts'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(Request $request)
     {
-        //
+        $request->validate([
+            'post_id' => 'required|exists:posts,id'
+        ]);
+        
+        $this->savedPostService->savePost($request->post_id);
+        
+        if ($request->ajax()) {
+            return response()->json(['success' => true]);
+        }
+        
+        return redirect()->back()->with('success', 'Post saved successfully.');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreSavedPostRequest $request)
+    public function destroy($postId)
     {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(SavedPost $savedPost)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(SavedPost $savedPost)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateSavedPostRequest $request, SavedPost $savedPost)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(SavedPost $savedPost)
-    {
-        //
+        $this->savedPostService->unsavePost($postId);
+        
+        if (request()->ajax()) {
+            return response()->json(['success' => true]);
+        }
+        
+        return redirect()->back()->with('success', 'Post unsaved.');
     }
 }

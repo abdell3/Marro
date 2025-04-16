@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\CommentController;
@@ -19,61 +20,73 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/register', [AuthController::class, 'registerForm'])->name('register');
+Route::post('/register', [AuthController::class, 'register']);
+Route::get('/login', [AuthController::class, 'loginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+
+
 Route::middleware(['auth'])->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Route::get('/dashboard', function () {
+    //             return view('auth.dashboard');
+    //         })->name('auth.dashboard');
+    // Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    // Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    // Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Community routes
+
 Route::resource('communities', CommunityController::class);
 Route::post('/communities/{community}/join', [CommunityController::class, 'join'])->name('communities.join');
 Route::post('/communities/{community}/leave', [CommunityController::class, 'leave'])->name('communities.leave');
 
-// Post routes
+
 Route::resource('posts', PostController::class);
 Route::post('/posts/{post}/upvote', [PostController::class, 'upvote'])->name('posts.upvote');
 Route::post('/posts/{post}/downvote', [PostController::class, 'downvote'])->name('posts.downvote');
 
-// Comment routes
+
 Route::resource('comments', CommentController::class)->except(['index', 'show']);
 Route::post('/comments/{comment}/upvote', [CommentController::class, 'upvote'])->name('comments.upvote');
 Route::post('/comments/{comment}/downvote', [CommentController::class, 'downvote'])->name('comments.downvote');
 
-// Thread routes
+
 Route::resource('threads', ThreadController::class);
 
-// Poll routes
+
 Route::post('/polls', [PollController::class, 'store'])->name('polls.store');
 Route::get('/polls/{poll}', [PollController::class, 'show'])->name('polls.show');
 Route::post('/polls/{poll}/vote', [PollController::class, 'vote'])->name('polls.vote');
 Route::get('/polls/{poll}/results', [PollController::class, 'results'])->name('polls.results');
 
-// Saved posts routes
+
 Route::get('/saved-posts', [SavedPostController::class, 'index'])->name('saved-posts.index');
 Route::post('/saved-posts', [SavedPostController::class, 'store'])->name('saved-posts.store');
 Route::delete('/saved-posts/{post}', [SavedPostController::class, 'destroy'])->name('saved-posts.destroy');
 
-// Tag routes
+
 Route::resource('tags', TagController::class);
 
-// Report routes
+
 Route::get('/reports/create', [ReportController::class, 'create'])->name('reports.create');
 Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
 
-// Badge routes
+
 Route::get('/badges', [BadgeController::class, 'index'])->name('badges.index');
 Route::get('/badges/{badge}', [BadgeController::class, 'show'])->name('badges.show');
 
-// Admin routes
+
 Route::middleware(['auth', 'can:admin'])->prefix('admin')->name('admin.')->group(function () {
-    // Role management
+    
     Route::resource('roles', RoleController::class);
     
-    // Permission management
+    
     Route::resource('permissions', PermissionController::class);
     
-    // Report management
+    
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/{report}', [ReportController::class, 'show'])->name('reports.show');
     Route::put('/reports/{report}', [ReportController::class, 'update'])->name('reports.update');
@@ -88,3 +101,79 @@ Route::middleware(['auth', 'can:admin'])->prefix('admin')->name('admin.')->group
     Route::post('/badges/award', [BadgeController::class, 'awardBadge'])->name('badges.award');
     Route::post('/badges/revoke', [BadgeController::class, 'revokeBadge'])->name('badges.revoke');
 });
+
+
+
+
+// use App\Http\Controllers\Admin\CommentController;
+// use App\Http\Controllers\Admin\DashboardController;
+// // use App\Http\Controllers\Admin\PostController;
+// use App\Http\Controllers\Admin\UserController;
+// use App\Http\Controllers\AuthController;
+// use App\Http\Controllers\CommunityController;
+// use App\Http\Controllers\HomeController;
+// use App\Http\Controllers\PostController;
+// use App\Http\Controllers\ReportController;
+// use App\Http\Controllers\TagController;
+// use App\Http\Controllers\ThreadController;
+// use Illuminate\Support\Facades\Route;
+
+// Route::get('/', function () {
+//     return view('welcome');
+// });
+
+
+// Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
+
+// Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+
+
+
+//     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+
+//     Route::resource('tags', TagController::class);
+    
+//     Route::resource('users', UserController::class);    
+
+
+
+
+//     Route::get('/', [HomeController::class, 'index'])->name('home');
+
+
+
+// Route::middleware('auth')->group(function () {
+//     Route::get('/dashboard', function () {
+//         return view('auth.dashboard');
+//     })->name('auth.dashboard');
+
+//     Route::resource('communities', CommunityController::class);
+//     Route::resource('threads', ThreadController::class);
+    
+    
+//     Route::middleware(['auth', 'permission:view-posts'])->group(function () {
+//         Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
+//         Route::get('/posts/create', [PostController::class, 'create'])->middleware('permission:create-posts')->name('posts.create');
+//         Route::post('/posts', [PostController::class, 'store'])->middleware('permission:create-posts')->name('posts.store');
+//         Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
+//         Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->middleware('permission:edit-posts')->name('posts.edit');
+//         Route::put('/posts/{post}', [PostController::class, 'update'])->middleware('permission:edit-posts')->name('posts.update');
+//         Route::delete('/posts/{post}', [PostController::class, 'destroy'])->middleware('permission:delete-posts')->name('posts.destroy');
+//     });
+
+//     Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
+//     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+
+
+//     });
+
+
+// Route::middleware(['auth'])->group(function () {
+//     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+//     Route::get('/communities', [UserController::class, 'communities'])->name('users.communities');
+//     Route::get('/reported', [ReportController::class, 'reported'])->name('reported');
+// });
+// ;
+
+

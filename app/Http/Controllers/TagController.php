@@ -3,6 +3,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreTagRequest;
+use App\Http\Requests\UpdateTagRequest;
 use App\Services\TagService;
 use Illuminate\Http\Request;
 
@@ -13,6 +15,8 @@ class TagController extends Controller
     public function __construct(TagService $tagService)
     {
         $this->tagService = $tagService;
+        $this->middleware('auth')->except(['index', 'show']);
+        $this->middleware('can:admin')->except(['index', 'show']);
     }
 
     public function index()
@@ -21,39 +25,39 @@ class TagController extends Controller
         return view('tags.index', compact('tags'));
     }
 
-    public function show($id)
+    public function create()
+    {
+        return view('tags.create');
+    }
+
+    public function store(StoreTagRequest $request)
+    {
+        $this->tagService->createTag($request->validated());
+        return redirect()->route('tags.index')->with('success', 'Tag created successfully.');
+    }
+
+    public function show($slug)
+    {
+        $tag = $this->tagService->getTagBySlug($slug);
+        $posts = $this->tagService->getPostsByTag($tag->id);
+        return view('tags.show', compact('tag', 'posts'));
+    }
+
+    public function edit($id)
     {
         $tag = $this->tagService->getTagById($id);
-        return view('tags.show', compact('tag'));
+        return view('tags.edit', compact('tag'));
     }
 
-    public function store(Request $request)
+    public function update(UpdateTagRequest $request, $id)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:tags',
-            'description' => 'nullable|string',
-        ]);
-
-        $this->tagService->createTag($data);
-        return redirect()->route('tags.index');
-    }
-
-    public function update(Request $request, $id)
-    {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:tags,slug,' . $id,
-            'description' => 'nullable|string',
-        ]);
-
-        $this->tagService->updateTag($id, $data);
-        return redirect()->route('tags.index');
+        $this->tagService->updateTag($id, $request->validated());
+        return redirect()->route('tags.index')->with('success', 'Tag updated successfully.');
     }
 
     public function destroy($id)
     {
         $this->tagService->deleteTag($id);
-        return redirect()->route('tags.index');
+        return redirect()->route('tags.index')->with('success', 'Tag deleted successfully.');
     }
 }

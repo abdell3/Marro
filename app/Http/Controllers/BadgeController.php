@@ -5,62 +5,99 @@ namespace App\Http\Controllers;
 use App\Models\Badge;
 use App\Http\Requests\StoreBadgeRequest;
 use App\Http\Requests\UpdateBadgeRequest;
+use App\Services\BadgeService;
 
 class BadgeController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+    protected $badgeService;
+    protected $userService;
+
+    public function __construct(BadgeService $badgeService, UserService $userService)
+    {
+        $this->badgeService = $badgeService;
+        $this->userService = $userService;
+        $this->middleware('auth');
+        $this->middleware('can:admin')->except(['index', 'show']);
+    }
+
     public function index()
     {
-        //
+        $badges = $this->badgeService->getAllBadges();
+        return view('badges.index', compact('badges'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        return view('admin.badges.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreBadgeRequest $request)
     {
-        //
+        $data = $request->validated();
+        
+        if ($request->hasFile('icon')) {
+            $data['icon'] = $request->file('icon')->store('badges', 'public');
+        }
+        
+        $this->badgeService->createBadge($data);
+        return redirect()->route('admin.badges.index')->with('success', 'Badge created successfully.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Badge $badge)
+    public function show($id)
     {
-        //
+        $badge = $this->badgeService->getBadgeWithUsers($id);
+        return view('badges.show', compact('badge'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Badge $badge)
+    public function edit($id)
     {
-        //
+        $badge = $this->badgeService->getBadgeById($id);
+        return view('admin.badges.edit', compact('badge'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateBadgeRequest $request, Badge $badge)
+    public function update(UpdateBadgeRequest $request, $id)
     {
-        //
+        $data = $request->validated();
+        
+        if ($request->hasFile('icon')) {
+            $data['icon'] = $request->file('icon')->store('badges', 'public');
+        }
+        
+        $this->badgeService->updateBadge($id, $data);
+        return redirect()->route('admin.badges.index')->with('success', 'Badge updated successfully.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Badge $badge)
+    public function destroy($id)
     {
-        //
+        $this->badgeService->deleteBadge($id);
+        return redirect()->route('admin.badges.index')->with('success', 'Badge deleted successfully.');
     }
+
+    public function awardBadge(Request $request)
+    {
+        $request->validate([
+            'badge_id' => 'required|exists:badges,id',
+            'user_id' => 'required|exists:users,id',
+        ]);
+        
+        $this->badgeService->awardBadgeToUser($request->badge_id, $request->user_id);
+        return redirect()->back()->with('success', 'Badge awarded successfully.');
+    }
+
+    public function revokeBadge(Request $request)
+    {
+        $request->validate([
+            'badge_id' => 'required|exists:badges,id',
+            'user_id' => 'required|exists:users,id',
+        ]);
+        
+        $this->badgeService->revokeBadgeFromUser($request->badge_id, $request->user_id);
+        return redirect()->back()->with('success', 'Badge revoked successfully.');
+    }
+
+
+    
 }

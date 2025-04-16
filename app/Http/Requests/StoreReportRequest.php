@@ -11,7 +11,7 @@ class StoreReportRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,10 @@ class StoreReportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'report_type_id' => 'required|exists:report_types,id',
+            'reportable_type' => 'required|string|in:App\\Models\\Post,App\\Models\\Comment,App\\Models\\User,App\\Models\\Community',
+            'reportable_id' => 'required|integer',
+            'description' => 'nullable|string',
         ];
     }
 }

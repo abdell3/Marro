@@ -7,6 +7,8 @@ use App\Http\Requests\StoreReportRequest;
 use App\Http\Requests\UpdateReportRequest;
 use App\Models\ReportType;
 use App\Services\ReportService;
+use App\Services\ReportTypeService;
+use Illuminate\Http\Request;
 
 class ReportController extends Controller
 {
@@ -14,90 +16,80 @@ class ReportController extends Controller
      * Display a listing of the resource.
      */
 
-    protected $reportService;
-
-    public function __construct(ReportService $reportServ)
-    {
-        $this->reportService = $reportServ;
-        $this->middleware('auth')->except(['index', 'show']);
-    }
-
-    public function index($request)
-    {
-        $status = $request->input('status', 'pending');
-        
-        $reports = Report::with(['reportable', 'user_id'])
-            ->where('status', $status)
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
-            
-        return view('admin.reports', compact('reports'));
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create($reportableType, $reportableId)
-    {
-        return view('reports.create', [
-            'reportableType' => $reportableType,
-            'reportableId' => $reportableId,
-            'reportTypes' => ReportType::all()
-        ]);
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreReportRequest $request)
-    {
-        $data = $request->validated();
-        $data['user_id'] = auth()->id();
-
-        $this->reportService->createReport($data);
-
-        return redirect()->back()
-            ->with('success', 'Votre report a été soumis avec succès.');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show($reportId)
-    {
-        $report = Report::with(['reportable', 'reporter'])->findOrFail($reportId);
-        
-        return view('admin.reports.show', compact('report'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Report $report)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateReportRequest $request, Report $report)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Report $report)
-    {
-        //
-    }
-
-    public function userReports()
-    {
-        $reports = $this->reportService->getUserReports(auth()->id());
-
-        return view('reports.user-index', compact('reports'));
-    }
+     protected $reportService;
+     protected $reportTypeService;
+ 
+     public function __construct(ReportService $reportService, ReportTypeService $reportTypeService)
+     {
+         $this->reportService = $reportService;
+         $this->reportTypeService = $reportTypeService;
+         $this->middleware('auth');
+     }
+ 
+     public function index()
+     {
+         // Only moderators and admins can see all reports
+         $this->authorize('moderator');
+         
+         $reports = $this->reportService->getAllReports();
+         return view('admin.reports.index', compact('reports'));
+     }
+ 
+     public function create(Request $request)
+     {
+         $reportTypes = $this->reportTypeService->getAllReportTypes();
+         $reportableType = $request->reportable_type;
+         $reportableId = $request->reportable_id;
+         
+         return view('reports.create', compact('reportTypes', 'reportableType', 'reportableId'));
+     }
+ 
+     public function store(StoreReportRequest $request)
+     {
+         $this->reportService->createReport($request->validated());
+         
+         return redirect()->back()->with('success', 'Report submitted successfully. Our moderators will review it.');
+     }
+ 
+     public function show($id)
+     {
+         $report = $this->reportService->getReportById($id);
+         $this->authorize('view', $report);
+         
+         return view('admin.reports.show', compact('report'));
+     }
+ 
+     public function update(UpdateReportRequest $request, $id)
+     {
+         $report = $this->reportService->getReportById($id);
+         $this->authorize('update', $report);
+         
+         $this->reportService->updateReport($id, $request->validated());
+         
+         return redirect()->route('admin.reports.index')->with('success', 'Report updated successfully.');
+     }
+ 
+     public function updateStatus(Request $request, $id)
+     {
+         $request->validate([
+             'status' => 'required|in:pending,resolved,rejected'
+         ]);
+         
+         $report = $this->reportService->getReportById($id);
+         $this->authorize('update', $report);
+         
+         $this->reportService->updateReportStatus($id, $request->status);
+         
+         return redirect()->route('admin.reports.index')->with('success', 'Report status updated successfully.');
+     }
+ 
+     public function destroy($id)
+     {
+         $report = $this->reportService->getReportById($id);
+         $this->authorize('delete', $report);
+         
+         $this->reportService->deleteReport($id);
+         
+         return redirect()->route('admin.reports.index')->with('success', 'Report deleted successfully.');
+     }
 }
