@@ -11,7 +11,7 @@ class UpdateReportRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,9 @@ class UpdateReportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'report_type_id' => 'sometimes|exists:report_types,id',
+            'description' => 'nullable|string',
+            'status' => 'sometimes|in:pending,resolved,rejected',
         ];
     }
 }

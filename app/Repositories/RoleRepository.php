@@ -6,109 +6,42 @@ use App\Models\Role;
 use App\Models\User;
 use App\Repositories\Interfaces\RoleRepositoryInterface;
 
-class RoleRepository implements RoleRepositoryInterface
+class RoleRepository extends BaseRepository implements RoleRepositoryInterface
 {
     /**
      * Create a new class instance.
      */
-    protected $model;
-
-    public function __construct(Role $role)
+    public function __construct(Role $model)
     {
-        $this->model = $role;
+        parent::__construct($model);
     }
 
-    public function all()
+    public function findByName($name)
     {
-        return $this->model->all();
+        return $this->model->where('name', $name)->first();
     }
 
-    public function paginate(int $perPage = 15)
-    {
-        return $this->model->with('permissions')->paginate($perPage);
-    }
-
-    public function findById(int $id)
+    public function findWithPermissions($id)
     {
         return $this->model->with('permissions')->findOrFail($id);
     }
 
-    public function findByName(string $name)
+    public function attachPermissions($roleId, $permissionIds)
     {
-        return $this->model->where('name', $name)->firstOrFail();
+        $role = $this->find($roleId);
+        return $role->permissions()->attach($permissionIds);
     }
 
-    public function create(array $data)
+    public function detachPermissions($roleId, $permissionIds)
     {
-        return $this->model->create($data);
+        $role = $this->find($roleId);
+        return $role->permissions()->detach($permissionIds);
     }
 
-    public function update(int $id, array $data)
+    public function syncPermissions($roleId, $permissionIds)
     {
-        $role = $this->findById($id);
-        $role->update($data);
-        return $role;
+        $role = $this->find($roleId);
+        return $role->permissions()->sync($permissionIds);
     }
-
-    public function delete(int $id)
-    {
-        $role = $this->findById($id);
-        return $role->delete();
-    }
-
-    public function getPermissions(int $roleId)
-    {
-        return $this->findById($roleId)->permissions;
-    }
-
-    public function syncPermissions(int $roleId, array $permissionIds)
-    {
-        $role = $this->findById($roleId);
-        $role->permissions()->sync($permissionIds);
-    }
-
-    public function assignToUser(int $userId, int $roleId)
-    {
-        $user = User::findOrFail($userId);
-        $user->role_id = $roleId;
-        return $user->save();
-    }
-
-    public function revokeFromUser(int $userId)
-    {
-        $defaultRole = $this->getDefaultRole();
-        return $this->assignToUser($userId, $defaultRole->id);
-    }
-
-    public function getUsersWithRole(int $roleId)
-    {
-        return User::where('role_id', $roleId)->get();
-    }
-
-    public function countUsersWithRole(int $roleId)
-    {
-        return User::where('role_id', $roleId)->count();
-    }
-
-    public function getDefaultRole()
-    {
-        return $this->model->where('name', 'user')->firstOrFail();
-    }
-
-    public function assignDefaultRole(int $userId)
-    {
-        $defaultRole = $this->getDefaultRole();
-        return $this->assignToUser($userId, $defaultRole->id);
-    }
-
-    public function search(string $query, int $perPage = 15)
-    {
-        return $this->model
-            ->where('name', 'like', "%{$query}%")
-            ->orWhere('description', 'like', "%{$query}%")
-            ->with('permissions')
-            ->paginate($perPage);
-    }
-
 
 }
