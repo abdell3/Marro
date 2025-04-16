@@ -66,17 +66,24 @@ class User extends Authenticatable
         ->unique('id');
     }
 
-    // public function hasRole($role)
-    // {
-    //     return $this->roles()->where('user_id', $role)->exists();
-    // }
+
+    public function hasRole($role)
+    {
+        return $this->roles->contains('name', $role);
+    }
 
 
 
-    // // public function hasPermission($permission)
-    // {
-    //     return $this->permissions()->where('name', $permission)->isNotEmpty();
-    // }
+    public function hasPermission($permission)
+    {
+        foreach ($this->roles as $role) {
+            if ($role->permissions->contains('name', $permission)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
 
 
 
