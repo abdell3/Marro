@@ -4,63 +4,35 @@ namespace App\Policies;
 
 use App\Models\Report;
 use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Auth\Access\Response;
 
 class ReportPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    use HandlesAuthorization;
+
+    public function view(User $user, Report $report)
     {
+        
+        if ($user->id === $report->user_id) {
+            return true;
+        }
+
+        
+        if ($user->roles->whereIn('name', ['Admin', 'Moderator'])->count() > 0) {
+            return true;
+        }
+
         return false;
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Report $report): bool
+    public function update(User $user, Report $report)
     {
-        return false;
+        return $user->roles->whereIn('name', ['Admin', 'Moderator'])->count() > 0;
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function delete(User $user, Report $report)
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Report $report): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Report $report): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Report $report): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Report $report): bool
-    {
-        return false;
+        return $user->roles->where('name', 'Admin')->count() > 0;
     }
 }
