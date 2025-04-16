@@ -6,6 +6,8 @@ use App\Models\Badge;
 use App\Http\Requests\StoreBadgeRequest;
 use App\Http\Requests\UpdateBadgeRequest;
 use App\Services\BadgeService;
+use App\Services\UserService;
+use Illuminate\Http\Request;
 
 class BadgeController extends Controller
 {
