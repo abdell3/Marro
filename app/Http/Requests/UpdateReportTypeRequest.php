@@ -9,7 +9,7 @@ class UpdateReportTypeRequest extends FormRequest
 {
     public function authorize()
     {
-        return true;
+        return $this->user()->hasRole('Admin');
     }
 
     public function rules()

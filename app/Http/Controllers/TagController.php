@@ -27,13 +27,13 @@ class TagController extends Controller
 
     public function create()
     {
-        return view('tags.create');
+        return view('admin.tags.create');
     }
 
     public function store(StoreTagRequest $request)
     {
         $this->tagService->createTag($request->validated());
-        return redirect()->route('tags.index')->with('success', 'Tag created successfully.');
+        return redirect()->route('admin.tags.index')->with('success', 'Tag created successfully.');
     }
 
     public function show($slug)
@@ -46,18 +46,18 @@ class TagController extends Controller
     public function edit($id)
     {
         $tag = $this->tagService->getTagById($id);
-        return view('tags.edit', compact('tag'));
+        return view('admin.tags.edit', compact('tag'));
     }
 
     public function update(UpdateTagRequest $request, $id)
     {
         $this->tagService->updateTag($id, $request->validated());
-        return redirect()->route('tags.index')->with('success', 'Tag updated successfully.');
+        return redirect()->route('admin.tags.index')->with('success', 'Tag updated successfully.');
     }
 
     public function destroy($id)
     {
         $this->tagService->deleteTag($id);
-        return redirect()->route('tags.index')->with('success', 'Tag deleted successfully.');
+        return redirect()->route('admin.tags.index')->with('success', 'Tag deleted successfully.');
     }
 }

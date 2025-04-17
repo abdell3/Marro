@@ -65,18 +65,44 @@ class RoleController extends Controller
  
      public function update(UpdateRoleRequest $request, $id)
      {
-         $this->roleService->updateRole($id, $request->only(['name', 'description']));
+        
          
-         if ($request->has('permissions')) {
-             $this->roleService->assignPermissions($id, $request->permissions);
-         }
+        
          
-         return redirect()->route('admin.roles.index')->with('success', 'Role updated successfully.');
+        $role = Role::findOrFail($id);
+        
+         
+        if (!in_array($role->name, ['Admin', 'Moderator', 'User'])) {
+            $this->roleService->updateRole($id, $request->only(['name', 'description']));
+        }
+         
+        if ($request->has('permissions')) {
+            $this->roleService->assignPermissions($id, $request->permissions);
+        }
+        //  else {
+        //     $this->roleService->removeRoleFromUser();
+        // }
+         
+        return redirect()->route('admin.roles.index')->with('success', 'Role updated successfully.');
      }
  
      public function destroy($id)
      {
-         $this->roleService->deleteRole($id);
-         return redirect()->route('admin.roles.index')->with('success', 'Role deleted successfully.');
+        $role = Role::findOrFail($id);
+        
+        
+        if (in_array($role->name, ['Admin', 'Moderator', 'User'])) {
+            return redirect()->route('admin.roles.index')->with('error', 'Cannot delete default roles.');
+        }
+        
+        
+        if ($role->users()->count() > 0) {
+            return redirect()->route('admin.roles.index')->with('error', 'Cannot delete role with assigned users.');
+        }
+        
+        
+        $role->permissions()->detach();
+        $role->roleService->deleteRole($id);
+        return redirect()->route('admin.roles.index')->with('success', 'Role deleted successfully.');
      }
 }

@@ -13,13 +13,36 @@ class UserService
      */
     public function getAllUsers()
     {
-        return User::paginate(15);
+        return User::with('roles')->paginate(15);
     }
 
     public function getUserById($id)
     {
-        return User::findOrFail($id);
+        return User::with([
+                'roles', 
+                'badges', 
+                'posts', 
+                'comments', 
+                'communities'
+            ])->findOrFail($id);
     }
+
+
+    public function getUsersWithRole($roleName)
+    {
+        return User::whereHas('roles', function($query) use ($roleName) {
+            $query->where('name', $roleName);
+        })->get();
+    }
+
+
+    public function getUsersWithBadge($badgeId)
+    {
+        return User::whereHas('badges', function($query) use ($badgeId) {
+            $query->where('badge_id', $badgeId);
+        })->get();
+    }
+
 
     public function createUser(array $data)
     {
@@ -82,6 +105,22 @@ class UserService
     {
         $user = User::findOrFail($userId);
         $user->roles()->sync($roleIds);
+        return $user;
+    }
+
+    public function awardBadge($userId, $badgeId)
+    {
+        $user = User::findOrFail($userId);
+        if (!$user->badges()->where('badge_id', $badgeId)->exists()) {
+            $user->badges()->attach($badgeId);
+        }
+        return $user;
+    }
+
+    public function revokeBadge($userId, $badgeId)
+    {
+        $user = User::findOrFail($userId);
+        $user->badges()->detach($badgeId);
         return $user;
     }
 }

@@ -5,50 +5,75 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Role;
 use App\Models\User;
+use App\Services\UserService;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    /**
-     * Afficher la liste des utilisateurs.
-     */
-    public function index()
+    
+    protected $userService;
+
+    public function __construct(UserService $userService)
     {
-        // Récupérer tous les utilisateurs avec pagination
-        $users = User::latest()->paginate(10); // 10 utilisateurs par page
-        return view('admin.users.index', compact('users'));
+        $this->userService = $userService;
+        $this->middleware('auth');
+        $this->middleware('can:admin');
     }
 
-    /**
-     * Afficher les détails d'un utilisateur.
-     */
-    public function show(User $user)
+    public function index(Request $request)
     {
+        $query = User::query();
+        
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('username', 'like', "%{$search}%");
+            });
+        }
+        
+        if ($request->has('role')) {
+            $query->whereHas('roles', function($q) use ($request) {
+                $q->where('name', $request->role);
+            });
+        }
+        
+        $users = $query->with('roles')->paginate(15);
+        $roles = Role::all();
+        
+        return view('admin.users.index', compact('users', 'roles'));
+    }
+
+    public function show($id)
+    {
+        $user = User::with(['roles', 'badges', 'posts', 'comments', 'communities'])->findOrFail($id);
         return view('admin.users.show', compact('user'));
     }
 
-    /**
-     * Activer ou désactiver un utilisateur.
-     */
-    public function toggleStatus(User $user)
+    public function edit($id)
     {
-        // Basculer le statut actif/inactif
-        $user->update(['is_active' => !$user->is_active]);
-
-        // Rediriger avec un message de succès
-        return back()->with('success', 'Statut de l\'utilisateur mis à jour.');
+        $user = User::with('roles')->findOrFail($id);
+        $roles = Role::all();
+        return view('admin.users.edit', compact('user', 'roles'));
     }
 
-    /**
-     * Supprimer un utilisateur.
-     */
-    public function destroy(User $user)
+    public function update(UpdateUserRequest $request, $id)
     {
-        // Supprimer l'utilisateur
-        $user->delete();
+        $user = $this->userService->updateUser($id, $request->except(['roles']));
+        
+        if ($request->has('roles')) {
+            $this->userService->syncRoles($id, $request->roles);
+        }
+        
+        return redirect()->route('admin.users.show', $user)->with('success', 'User updated successfully.');
+    }
 
-        // Rediriger avec un message de succès
-        return back()->with('success', 'Utilisateur supprimé avec succès.');
+    public function destroy($id)
+    {
+        $this->userService->deleteUser($id);
+        return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
     }
 }

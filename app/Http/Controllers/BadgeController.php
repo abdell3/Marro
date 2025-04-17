@@ -97,7 +97,7 @@ class BadgeController extends Controller
         ]);
         
         $this->badgeService->revokeBadgeFromUser($request->badge_id, $request->user_id);
-        return redirect()->back()->with('success', 'Badge revoked successfully.');
+        return redirect()->route('admin.badges.index')->with('success', 'Badge revoked successfully.');
     }
 
 

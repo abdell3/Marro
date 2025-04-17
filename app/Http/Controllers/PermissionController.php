@@ -6,6 +6,7 @@ use App\Models\Permission;
 use App\Http\Requests\StorePermissionRequest;
 use App\Http\Requests\UpdatePermissionRequest;
 use App\Services\PermissionService;
+use App\Services\RoleService;
 use Illuminate\Http\Request;
 
 class PermissionController extends Controller
@@ -16,9 +17,11 @@ class PermissionController extends Controller
 
 
     protected $permissionService;
+    protected $roleService;
 
-    public function __construct(PermissionService $permissionService)
+    public function __construct(PermissionService $permissionService, RoleService $roleService)
     {
+         $this->roleService = $roleService; 
          $this->permissionService = $permissionService;
          $this->middleware('auth');
          $this->middleware('can:admin');
@@ -32,12 +35,18 @@ class PermissionController extends Controller
  
     public function create()
     {
+         $this->roleService->getAllRoles();
          return view('admin.permissions.create');
     }
  
     public function store(StorePermissionRequest $request)
     {
          $this->permissionService->createPermission($request->validated());
+
+         if($request->has('roles'))
+         {
+             $this->roleService->assignPermissions($request->roles, $request->permissions); 
+         }
          return redirect()->route('admin.permissions.index')->with('success', 'Permission created successfully.');
     }
  
@@ -50,7 +59,8 @@ class PermissionController extends Controller
     public function edit($id)
     {
          $permission = $this->permissionService->getPermissionById($id);
-         return view('admin.permissions.edit', compact('permission'));
+         $roles = $this->roleService->getAllRoles();
+         return view('admin.permissions.edit', compact('permission', 'roles'));
     }
  
     public function update(UpdatePermissionRequest $request, $id)

@@ -11,7 +11,7 @@ class StorePermissionRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return $this->user()->hasRole('Admin');
     }
 
     /**
@@ -24,6 +24,8 @@ class StorePermissionRequest extends FormRequest
         return [
             'name' => 'required|string|max:255|unique:permissions',
             'description' => 'nullable|string',
+            'roles' => 'nullable:array',
+            'roles.*' => 'exists:roles,id',
         ];
     }
 }
