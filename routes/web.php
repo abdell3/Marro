@@ -33,10 +33,16 @@ Route::middleware(['auth'])->group(function () {
     // Route::get('/dashboard', function () {
     //             return view('auth.dashboard');
     //         })->name('auth.dashboard');
-    // Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    // Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    // Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
+
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/profile/password', [ProfileController::class, 'editPassword'])->name('profile.password');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+    Route::get('/profile/delete', [ProfileController::class, 'confirmDelete'])->name('profile.delete');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    });
+
 
 
 Route::resource('communities', CommunityController::class);

@@ -41,7 +41,7 @@
                 </div>
             </div>
 
-            <!-- Settings Dropdown -->
+            
             <div class="hidden sm:flex sm:items-center sm:ml-6">
                 @auth
                     <x-dropdown align="right" width="48">
@@ -56,8 +56,12 @@
                                 </div>
                             </button>
                         </x-slot>
-
+                        
+                        
                         <x-slot name="content">
+                            <x-dropdown-link :href="route('profile.show')">
+                                    {{ __('My Profile') }}
+                            </x-dropdown-link>
                             <x-dropdown-link :href="route('profile.edit')">
                                 {{ __('Profile') }}
                             </x-dropdown-link>
@@ -70,7 +74,7 @@
                                 {{ __('Create Community') }}
                             </x-dropdown-link>
 
-                            <!-- Authentication -->
+                            
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
 
