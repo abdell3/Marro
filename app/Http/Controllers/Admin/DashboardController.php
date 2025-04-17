@@ -73,7 +73,8 @@ class DashboardController extends Controller
             'userStats',
             'postStats',
             'topCommunities',
-            'recentReports'
+            'recentReports',
+            'posts'
         ));
     }
 }

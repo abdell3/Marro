@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-layouts.app-layout>
     <div class="bg-white border-b">
         <div class="h-32 bg-gradient-to-r from-orange-400 to-orange-600 relative">
             @if($community->banner)
@@ -214,4 +214,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+</x-layouts.app-layout>

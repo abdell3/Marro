@@ -9,13 +9,13 @@
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-xl font-bold">Votre Fil d'Actualité</h2>
                     <div class="flex space-x-2">
-                        <a href="{{ route('home', ['sort' => 'popular']) }}" class="px-3 py-1 rounded-full {{ request('sort', 'popular') === 'popular' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-100' : 'hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                        <a href="{{route('auth.dashboard',['sort' => 'popular'])}}" class="px-3 py-1 rounded-full {{ request('sort', 'popular') === 'popular' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-100' : 'hover:bg-gray-100 dark:hover:bg-gray-700' }}">
                             Populaire
                         </a>
-                        <a href="{{ route('home', ['sort' => 'new']) }}" class="px-3 py-1 rounded-full {{ request('sort') === 'new' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-100' : 'hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                        <a href="{{route('auth.dashboard',['sort' => 'new'])}}" class="px-3 py-1 rounded-full {{ request('sort') === 'new' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-100' : 'hover:bg-gray-100 dark:hover:bg-gray-700' }}">
                             Nouveau
                         </a>
-                        <a href="{{ route('home', ['sort' => 'top']) }}" class="px-3 py-1 rounded-full {{ request('sort') === 'top' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-100' : 'hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                        <a href="{{route('auth.dashboard',['sort' => 'top'])}}" class="px-3 py-1 rounded-full {{ request('sort') === 'top' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-100' : 'hover:bg-gray-100 dark:hover:bg-gray-700' }}">
                             Top
                         </a>
                     </div>
@@ -73,7 +73,7 @@
                                             
                                             @if($post->content)
                                                 <div class="prose dark:prose-invert max-w-none line-clamp-2 mb-2">
-                                                    {{ Str::limit(strip_tags($post->content), 200 }}
+                                                    {{ Str::limit(strip_tags($post->content), 200 )}}
                                                 </div>
                                             @endif
                                             
