@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title') - Marro</title>
+    <title>{{ $title ?? 'Auth' }} - Marro</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -33,7 +33,7 @@
         <div class="hidden lg:block absolute bottom-20 left-1/4 w-16 h-16 bg-orange-500 rounded-full opacity-10 float-animation" style="animation-delay: 2s;"></div>
         
         <!-- Main Content -->
-        @yield('content')
+        {{ $slot }}
         
         <!-- Footer -->
         <footer class="mt-8 text-center text-sm text-gray-500 pb-6">

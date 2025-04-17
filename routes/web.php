@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PollController;
 use App\Http\Controllers\PostController;
@@ -20,19 +21,30 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/register', [AuthController::class, 'registerForm'])->name('register');
-Route::post('/register', [AuthController::class, 'register']);
-Route::get('/login', [AuthController::class, 'loginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
+Route::middleware('guest')->group(function () {
+    Route::get('/register', [AuthController::class, 'registerForm'])->name('register');
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::get('/login', [AuthController::class, 'loginForm'])->name('login');
+    Route::post('/login', [AuthController::class, 'login']);
+    // Route::get('/forgot-password', [AuthController::class, 'forgotPasswordForm'])->name('password.request');
+    // Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
+    // Route::get('/reset-password/{token}', [AuthController::class, 'resetPasswordForm'])->name('password.reset');
+    // Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
+});
+
+
+
+
+
+
+
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 
 
 Route::middleware(['auth'])->group(function () {
 
-    // Route::get('/dashboard', function () {
-    //             return view('auth.dashboard');
-    //         })->name('auth.dashboard');
+    Route::get('/home', [HomeController::class, 'index'])->name('auth.dashboard');
 
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');

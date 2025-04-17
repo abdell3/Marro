@@ -40,6 +40,8 @@ use App\Services\RoleService;
 use App\Services\SavedPostService;
 use App\Services\TagService;
 use App\Services\ThreadService;
+use App\View\Components\GuestLayout;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
@@ -182,41 +184,7 @@ class RepositoryServiceProvider extends ServiceProvider
         });
 
 
-
-
-
         
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
     
     /**
@@ -224,6 +192,6 @@ class RepositoryServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Blade::component('guest-layout', GuestLayout::class);
     }
 }

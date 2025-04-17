@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+</x-admin-layout>
 
 @section('content')
 <div class="container py-6">
@@ -147,4 +147,4 @@
         {{ $reports->links() }}
     </div>
 </div>
-@endsection
+</x-admin-layout>

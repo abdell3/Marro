@@ -2,37 +2,54 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RegisterRequest;
+use App\Models\Role;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules;
 
 class AuthController extends Controller
 {
+
+
+    public function __construct()
+    {
+        $this->middleware('guest')->except(['logout', 'dashboard']);
+        $this->middleware('auth')->only('dashborad');
+    }
+
+
     public function registerForm()
     {
         return view('auth.register');
     }
 
 
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
-
+        $request->validated();
         $user = User::create([
             'name' => $request->name,
+            'username' => $request->username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
 
+        $user->roles()->attach(Role::where('name', 'user')->first());
+
+        event(new Registered($user));
+
         Auth::login($user);
 
-        return redirect()->route('auth.dashboard');
+        if ($user->hasRole('admin')) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        return redirect()->route('dashboard');
     }
 
 
@@ -52,12 +69,18 @@ class AuthController extends Controller
 
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $request->session()->regenerate();
-            return redirect()->route('auth.dashboard'); 
+
+            // $user = Auth::user();
+
+            if (Auth::user()->hasRole('admin')) {
+                return redirect()->route('admin.dashboard');
+            }
+            return redirect()->intended(route('auth.dashboard')); 
         }
 
         return back()->withErrors([
-            'email' => 'Oops.',
-        ]);
+            'email' => 'Email invalid.',
+        ])->onlyInput('email');
     }
 
 
@@ -68,4 +91,17 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
         return redirect('/');
     }
+
+
+    public function dashboard()
+    {
+        return view('dashboard');
+    }
+
+    public function forgotenPasswordForm()
+    {
+        return view('auth.forget-password');
+    }
+
+    
 }
