@@ -21,7 +21,7 @@ class AdminReportController extends Controller
      */
     public function pendingReports()
     {
-        $reports = $this->reportService->getPendingReport();
+        $reports = $this->reportService->getReportsByStatus('pending');
         
         return view('', compact('reports'));
     }
@@ -31,7 +31,7 @@ class AdminReportController extends Controller
      */
     public function show(int $id)
     {
-        $report = $this->reportService->getReport($id);
+        $report = $this->reportService->getReportById($id);
         
         return view('', compact('report'));
     }
@@ -41,7 +41,7 @@ class AdminReportController extends Controller
      */
     public function handleReport(Request $request, int $id)
     {
-        $this->reportService->handleReport(
+        $this->reportService->createReport(
             $id,
             $request->status,
             auth()->id()
