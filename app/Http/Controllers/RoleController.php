@@ -24,11 +24,12 @@ class RoleController extends Controller
          $this->roleService = $roleService;
          $this->permissionService = $permissionService;
          $this->middleware('auth');
-         $this->middleware('can:admin');
+         $this->middleware('checkRole:admin');
      }
  
      public function index()
      {
+        $this->authorize('viewAny', Role::class);
          $roles = $this->roleService->getAllRoles();
          return view('admin.roles.index', compact('roles'));
      }

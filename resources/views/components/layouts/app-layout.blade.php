@@ -49,7 +49,6 @@
 
             {{ $slot }}
         </main>
-        </x-navigation>
     </div>
 </body>
 </html>

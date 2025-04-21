@@ -6,12 +6,15 @@ use App\Models\Comment;
 use App\Models\Community;
 use App\Models\Post;
 use App\Models\Report;
+use App\Models\Role;
 use App\Models\Thread;
 use App\Policies\CommentPolicy;
 use App\Policies\CommunityPolicy;
 use App\Policies\PostPolicy;
 use App\Policies\ReportPolicy;
+use App\Policies\RolePolicy;
 use App\Policies\ThreadPolicy;
+use App\Repositories\Interfaces\RoleRepositoryInterface;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -28,6 +31,7 @@ class AuthServiceProvider extends ServiceProvider
         Comment::class => CommentPolicy::class,
         Thread::class => ThreadPolicy::class,
         Report::class => ReportPolicy::class,
+        Role::class => RolePolicy::class,
     ];
 
     /**

@@ -21,17 +21,17 @@ class TagRepository extends BaseRepository implements TagRepositoryInterface
 
     public function findBySlug($slug)
     {
-        return $this->model->where('slug', $slug)->first();
+        return $this->model->where('slug', $slug)->first()->paginate(5);
     }
 
     public function findByName($name)
     {
-        return $this->model->where('name', $name)->first();
+        return $this->model->where('name', $name)->first()->paginate(5);
     }
 
     public function findOrCreateByName($name)
     {
-        $tag = $this->findByName($name);
+        $tag = $this->findByName($name)->paginate(5);
         
         if (!$tag) {
             $tag = $this->model->create([

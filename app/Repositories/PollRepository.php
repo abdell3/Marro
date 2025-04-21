@@ -12,6 +12,10 @@ class PollRepository extends BaseRepository implements PollRepositoryInterface
     /**
      * Create a new class instance.
      */
+
+
+    
+
     public function __construct(Poll $model)
     {
         parent::__construct($model);

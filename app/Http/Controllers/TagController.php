@@ -22,7 +22,7 @@ class TagController extends Controller
     public function index()
     {
         $tags = $this->tagService->getAllTags();
-        return view('tags.index', compact('tags'));
+        return view('admin.tags.index', compact('tags'));
     }
 
     public function create()
@@ -40,7 +40,7 @@ class TagController extends Controller
     {
         $tag = $this->tagService->getTagBySlug($slug);
         $posts = $this->tagService->getPostsByTag($tag->id);
-        return view('tags.show', compact('tag', 'posts'));
+        return view('admin.tags.show', compact('tag', 'posts'));
     }
 
     public function edit($id)

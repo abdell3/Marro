@@ -32,7 +32,7 @@ class ReportController extends Controller
      public function index(Request $request)
      {
          
-        $this->authorize('view', Report::class);
+        $this->authorize('viewAny', Report::class);
         $query = Report::query()->with(['user', 'reportType']);
         
         if ($request->has('search')) {

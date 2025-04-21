@@ -22,7 +22,7 @@
                     @if(count($tags) > 0)
                         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             @foreach($tags as $tag)
-                                <a href="{{ route('tags.show', $tag->slug) }}" class="block p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+                                <a href="{{ route('admin.tags.show', $tag->slug) }}" class="block p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
                                     <h4 class="font-semibold text-lg">{{ $tag->name }}</h4>
                                     <p class="text-sm text-gray-500">{{ $tag->posts->count() }} posts</p>
                                 </a>
@@ -32,7 +32,7 @@
                         <div class="text-center py-8">
                             <p class="text-gray-500">No tags found.</p>
                             @can('admin')
-                                <a href="{{ route('tags.create') }}" class="mt-4 inline-block px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">Create a Tag</a>
+                                <a href="{{ route('admin.tags.create') }}" class="mt-4 inline-block px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">Create a Tag</a>
                             @endcan
                         </div>
                     @endif

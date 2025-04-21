@@ -15,7 +15,7 @@ class ReportTypeController extends Controller
     {
         $this->reportTypeService = $reportTypeService;
         $this->middleware('auth');
-        $this->middleware('can:admin');
+        $this->middleware('checkRole:admin');
     }
 
     public function index()

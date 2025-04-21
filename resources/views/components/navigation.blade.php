@@ -20,7 +20,7 @@
                     </x-nav-link>
                     <x-nav-link :href="route('communities.index')" :active="request()->routeIs('communities.index')">
                         {{ __('Communities') }}
-                    </x-nav-link>
+                    </x-nav-link>   
                 </div>
             </div>
 

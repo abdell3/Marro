@@ -1,4 +1,4 @@
-@extends('layouts.app')
+<x-layouts.app-layout>
 
 @section('title', 'Home')
 
@@ -19,4 +19,4 @@
             @endforeach
         </div>
     </div>
-@endsection
+</x-layouts.app-layout>

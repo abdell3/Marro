@@ -44,4 +44,9 @@ class RoleRepository extends BaseRepository implements RoleRepositoryInterface
         return $role->permissions()->sync($permissionIds);
     }
 
+    public function withCount()
+    {
+        return Role::withCount('users')->get();
+    }
+
 }

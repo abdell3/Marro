@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Admin Dashboard') }}
@@ -152,7 +152,7 @@
                 </div>
             </div>
 
-            <!-- Admin Quick Links -->
+            
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-8">
                 <div class="p-6 border-b border-gray-200">
                     <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
@@ -191,4 +191,4 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     @endpush
-</x-app-layout>
+</x-admin-layout>

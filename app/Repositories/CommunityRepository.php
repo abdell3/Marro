@@ -12,29 +12,34 @@ class CommunityRepository extends BaseRepository implements CommunityRepositoryI
      * Create a new class instance.
      */
 
-     public function __construct(Community $model)
-     {
-         parent::__construct($model);
-     }
+    public function __construct(Community $model)
+    {
+        parent::__construct($model);
+    }
  
-     public function findBySlug($slug)
-     {
-         return $this->model->where('slug', $slug)->firstOrFail();
-     }
+    public function findBySlug($slug)
+    {
+        return $this->model->with('user')->where('slug', $slug)->firstOrFail();
+    }
  
-     public function findPopular()
-     {
-         return $this->model->withCount('users')
-             ->orderBy('users_count', 'desc')
-             ->paginate(15);
-     }
+    public function findPopular()
+    {
+        return $this->model->withCount(['users', 'posts'])
+            ->orderBy('users_count', 'desc')
+            ->paginate(15);
+    }
  
-     public function search($query)
-     {
-         return $this->model->where('name', 'like', "%{$query}%")
-             ->orWhere('description', 'like', "%{$query}%")
-             ->paginate(15);
-     }
+    public function search($query)
+    {
+        return $this->model->where('name', 'like', "%{$query}%")
+            ->orWhere('description', 'like', "%{$query}%")
+            ->paginate(15);
+    }
+
+    public function paginate($perPage = 15)
+    {
+        return $this->model->with('user')->paginate($perPage);
+    }
     
     // public function oldLogique()
     // {

@@ -75,7 +75,7 @@
                                                 <a href="{{ route('admin.badges.edit', $badge->id) }}" class="text-blue-500 hover:text-blue-700">
                                                     Edit
                                                 </a>
-                                                <a href="#" onclick="openAwardModal({{ $badge->id }} , '{{ $badge->name }}')" class="text-green-500 hover:text-green-700">
+                                                <a href="#" data-badge-id="{{ $badge->id }}" data-badge-name="{{ $badge->name }}" class="open-award-modal text-green-500 hover:text-green-700">
                                                     Award
                                                 </a>
                                                 <form action="{{ route('admin.badges.destroy', $badge->id) }}" method="POST" class="inline">
@@ -102,7 +102,7 @@
     </div>
     
     <!-- Award Badge Modal -->
-    <div id="awardBadgeModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center hidden z-50">
+    <div id="awardBadgeModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full">
             <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div class="sm:flex sm:items-start">
@@ -137,31 +137,14 @@
                 </div>
             </div>
             <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button type="button" onclick="submitAwardForm()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-orange-500 text-base font-medium text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 sm:ml-3 sm:w-auto sm:text-sm">
+                <button type="button" data-action="submit-award-form" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-orange-500 text-base font-medium text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 sm:ml-3 sm:w-auto sm:text-sm">
                     Award Badge
                 </button>
-                <button type="button" onclick="closeAwardModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                <button type="button" data-action="close-award-modal" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                     Cancel
                 </button>
             </div>
         </div>
     </div>
     
-    @push('scripts')
-    <script>
-        function openAwardModal(badgeId, badgeName) {
-            document.getElementById('badgeId').value = badgeId;
-            document.getElementById('badgeName').textContent = badgeName;
-            document.getElementById('awardBadgeModal').classList.remove('hidden');
-        }
-        
-        function closeAwardModal() {
-            document.getElementById('awardBadgeModal').classList.add('hidden');
-        }
-        
-        function submitAwardForm() {
-            document.getElementById('awardBadgeForm').submit();
-        }
-    </script>
-    @endpush
 </x-admin-layout>

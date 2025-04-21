@@ -147,7 +147,7 @@ class RepositoryServiceProvider extends ServiceProvider
             RoleRepository::class
         );
         $this->app->bind(RoleService::class, function ($app){
-            return new ReportService($app->make(RoleRepositoryInterface::class));
+            return new RoleService($app->make(RoleRepositoryInterface::class));
         });
 
 
@@ -193,5 +193,6 @@ class RepositoryServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Blade::component('guest-layout', GuestLayout::class);
+        Blade::component('');
     }
 }

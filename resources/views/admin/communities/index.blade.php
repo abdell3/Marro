@@ -70,9 +70,13 @@
                                         </td>
                                         <td class="py-4 px-4 border-b border-gray-200">
                                             <div class="text-sm font-medium text-gray-900">
+                                                @if ($community->user)
                                                 <a href="{{ route('admin.users.show', $community->user_id) }}" class="text-blue-500 hover:text-blue-700">
                                                     {{ $community->user->name }}
                                                 </a>
+                                                @else
+                                                <span class="text-gray-400 italic">Utilisateur supprimé</span>
+                                                @endif
                                             </div>
                                         </td>
                                         <td class="py-4 px-4 border-b border-gray-200">

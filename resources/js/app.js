@@ -1,11 +1,11 @@
 import './bootstrap';
 
 
-import Alpine from 'alpine.js';
+// import Alpine from 'alpine.js';
 
-window.Alpine = Alpine;
+// window.Alpine = Alpine;
 
-Alpine.start();
+// Alpine.start();
 
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -25,3 +25,30 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+
+window.openAwardModal = function(badgeId, badgeName) {
+    const badgeIdInput = document.getElementById('badgeId');
+    const badgeNameSpan = document.getElementById('badgeName');
+    const modal = document.getElementById('awardBadgeModal');
+
+    if (badgeIdInput && badgeNameSpan && modal) {
+        badgeIdInput.value = badgeId;
+        badgeNameSpan.textContent = badgeName;
+        modal.classList.remove('hidden');
+    }
+};
+
+window.closeAwardModal = function() {
+    const modal = document.getElementById('awardBadgeModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+};
+
+window.submitAwardForm = function() {
+    const form = document.getElementById('awardBadgeForm');
+    if (form) {
+        form.submit();
+    }
+};

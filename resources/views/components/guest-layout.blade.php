@@ -21,7 +21,7 @@
                 <div class="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
                     R
                 </div>
-                <span class="ml-2 text-2xl font-bold text-gray-900">Reddit Clone</span>
+                <span class="ml-2 text-2xl font-bold text-gray-900">Marro</span>
             </a>
         </div>
 

@@ -42,9 +42,9 @@ class AdminReportController extends Controller
     public function handleReport(Request $request, int $id)
     {
         $this->reportService->createReport(
-            $id,
-            $request->status,
-            auth()->id()
+            [$id,
+            $request->status],
+            
         );
 
         return redirect()->route('')
