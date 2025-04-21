@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\CommunityController;
@@ -15,6 +17,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SavedPostController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\ThreadController;
+use App\Models\Community;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -56,7 +59,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
 
-
+Route::get('communities', [CommunityController::class, 'index'])->name('communities.index');
 Route::resource('communities', CommunityController::class);
 Route::post('/communities/{community}/join', [CommunityController::class, 'join'])->name('communities.join');
 Route::post('/communities/{community}/leave', [CommunityController::class, 'leave'])->name('communities.leave');
@@ -86,24 +89,37 @@ Route::post('/saved-posts', [SavedPostController::class, 'store'])->name('saved-
 Route::delete('/saved-posts/{post}', [SavedPostController::class, 'destroy'])->name('saved-posts.destroy');
 
 
-Route::resource('tags', TagController::class);
 
 
 Route::get('/reports/create', [ReportController::class, 'create'])->name('reports.create');
 Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
 
 
-Route::get('/badges', [BadgeController::class, 'index'])->name('badges.index');
 Route::get('/badges/{badge}', [BadgeController::class, 'show'])->name('badges.show');
 
 
-Route::middleware(['auth', 'can:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'checkRole:Admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/badges', [BadgeController::class, 'index'])->name('badges.index');
+
+    Route::get('/communities/{community}', [CommunityController::class, 'show'])->name('communities.show');
+    Route::delete('/communities/{community}', [CommunityController::class, 'destroy'])->name('communities.destroy');
     
+    Route::get('communities', [CommunityController::class, 'index'])->name('communities.index');
+    Route::resource('tags', TagController::class);
+
+    Route::get('tag', [TagController::class, 'index'])->name('tags.index');
+    Route::get('tags', [TagController::class, 'show'])->name('tags.show');
+     
+
+
+
     Route::resource('roles', RoleController::class);
-    
-    
     Route::resource('permissions', PermissionController::class);
-    
+
+    Route::get('user', [UserController::class, 'index'])->name('users.index');
+    Route::get('users', [UserController::class, 'show'])->name('users.show');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
     
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/{report}', [ReportController::class, 'show'])->name('reports.show');

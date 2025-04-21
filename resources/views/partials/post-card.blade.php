@@ -13,9 +13,9 @@
         <div class="flex-1">
             <div class="p-3 pb-2">
                 <div class="flex items-center text-sm text-gray-500">
-                    <span class="font-medium text-black">m/{{ $post->community }}</span>
+                    <span class="font-medium text-black">com/{{ $post->community->slug }}</span>
                     <span class="mx-1">•</span>
-                    <span>Posted by u/{{ $post->author }}</span>
+                    <span>Posted by u/{{ $post->user->name }}</span>
                     <span class="mx-1">•</span>
                     <span>{{ $post->created_at->diffForHumans() }}</span>
                 </div>
@@ -46,3 +46,79 @@
         </div>
     </div>
 </div>
+
+
+
+<!-- <div class="bg-white rounded-md border overflow-hidden mb-4 shadow-sm">
+    <div class="flex">
+        
+        <div class="bg-gray-50 p-2 flex flex-col items-center">
+            <button class="text-gray-500 hover:text-orange-500">
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            <span class="text-sm font-medium my-1">{{ $post->upvotes }}</span>
+            <button class="text-gray-500 hover:text-blue-500">
+                <i class="fas fa-arrow-down"></i>
+            </button>
+        </div>
+
+        
+        <div class="flex-1">
+            
+            <div class="p-3 pb-2">
+                <div class="flex items-center text-sm text-gray-500 space-x-2">
+                    <span class="font-semibold text-black">
+                        m/{{ $post->community->name }}
+                    </span>
+                    <span>•</span>
+                    <span>Posted by u/{{ $post->user->name }}</span>
+                    <span>•</span>
+                    <span>{{ $post->created_at->diffForHumans() }}</span>
+                </div>
+
+                
+                <h3 class="text-xl font-semibold mt-2">{{ $post->title }}</h3>
+            </div>
+
+            
+            @if($post->content)
+                <div class="px-3 pb-2">
+                    <p class="text-gray-800">{{ $post->content }}</p>
+                </div>
+            @endif
+
+            
+            @if($post->tags && $post->tags->count())
+                <div class="px-3 pb-2 space-x-2">
+                    @foreach($post->tags as $tag)
+                        <span class="inline-block bg-orange-100 text-orange-600 text-xs font-semibold px-2 py-1 rounded-full">
+                            #{{ $tag->name }}
+                        </span>
+                    @endforeach
+                </div>
+            @endif
+
+            
+            <div class="px-3 py-2 border-t flex space-x-4 text-gray-500 text-sm">
+                <button class="flex items-center space-x-1 hover:text-gray-700">
+                    <i class="far fa-comment-alt"></i>
+                    <span>{{ $post->comments_count }} Comments</span>
+                </button>
+                <button class="flex items-center space-x-1 hover:text-gray-700">
+                    <i class="fas fa-share"></i>
+                    <span>Share</span>
+                </button>
+                <button class="flex items-center space-x-1 hover:text-gray-700">
+                    <i class="far fa-bookmark"></i>
+                    <span>Save</span>
+                </button>
+                <button class="hover:text-gray-700">
+                    <i class="fas fa-ellipsis-h"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div> -->
+
+
+

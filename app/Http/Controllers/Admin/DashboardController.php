@@ -28,7 +28,7 @@ class DashboardController extends Controller
         $this->userService = $userService;
         $this->reportService = $reportService;
         $this->middleware('auth');
-        $this->middleware('can:admin');
+        // $this->middleware('can:admin');
     }
 
     public function index()
@@ -39,7 +39,7 @@ class DashboardController extends Controller
         $communityCount = Community::count();
         $pendingReportsCount = Report::where('status', 'pending')->count();
 
-        
+        $posts = [];
         $userStats = User::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
             ->where('created_at', '>=', now()->subDays(30))
             ->groupBy('date')

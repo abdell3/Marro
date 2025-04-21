@@ -1,4 +1,5 @@
-name : marro
+name: marro
+
 services:
   mysql:
     image: 'mysql:latest'
@@ -10,3 +11,23 @@ services:
       - 'MYSQL_USER=abdou'
     ports:
       - '3306:3306'
+    networks:
+      - marro-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: verysecretpassword
+    ports:
+      - '8080:80'
+    depends_on:
+      - mysql
+    networks:
+      - marro-network
+
+networks:
+  marro-network:
+    driver: bridge

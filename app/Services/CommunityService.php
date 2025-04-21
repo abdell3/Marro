@@ -14,7 +14,7 @@ class CommunityService
      */
 
 
-     protected $communityRepository;
+    protected $communityRepository;
 
     public function __construct(CommunityRepository $communityRepository)
     {

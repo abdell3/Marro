@@ -19,9 +19,15 @@ class Community extends Model
         'slug',
     ];
 
+
     public function users()
     {
-        return $this->belongsToMany(User::class, 'community_user');
+        return $this->belongsToMany(User::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'community_user');
     }
 
     public function posts()

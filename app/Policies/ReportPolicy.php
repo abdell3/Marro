@@ -26,6 +26,11 @@ class ReportPolicy
         return false;
     }
 
+    public function viewAny(User $user)
+    {
+        return $user->roles->whereIn('name', ['Admin', 'Moderator'])->count() > 0;
+    }
+
     public function update(User $user, Report $report)
     {
         return $user->roles->whereIn('name', ['Admin', 'Moderator'])->count() > 0;

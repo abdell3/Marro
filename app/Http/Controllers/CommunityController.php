@@ -6,7 +6,9 @@ use App\Models\Community;
 use App\Http\Requests\StoreCommunityRequest;
 use App\Http\Requests\UpdateCommunityRequest;
 use App\Services\CommunityService;
+use Illuminate\Container\Attributes\Auth as AttributesAuth;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Auth;
 
 class CommunityController extends Controller
@@ -27,15 +29,31 @@ class CommunityController extends Controller
 
     public function index(Request $request)
     {
-        if($request->has('popular')) {
-            $communities = $this->communityService->getPopularCommunities();
-        }elseif($request->has('search')) {
-            $communities = $this->communityService->searchCommunities($request->search);
-        }else{
+
+        $user = Auth::user();
+
+        // $communities =$this->communityService->getAllCommunities(10);
+        if($user->hasRole('Admin'))
+        {
             $communities = $this->communityService->getAllCommunities(10);
+
+            foreach ($communities as $community) {
+                $community->loadCount('users', 'posts');
+            }
+            return  view('admin.communities.index', compact('communities'));
         }
 
-        return view('communities.index', compact('communities'));   
+        elseif ($user->hasRole('User')) {  
+            if($request->has('popular')) {
+                $communities = $this->communityService->getPopularCommunities();
+            }elseif($request->has('search')) {
+                $communities = $this->communityService->searchCommunities($request->search);
+            }else{
+                $communities = $this->communityService->getAllCommunities(10);
+            }
+            return view('communities.index', compact('communities'));  
+        } 
+        return view('communities.index', compact('communities'));
     }
 
     /**

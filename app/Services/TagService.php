@@ -17,7 +17,7 @@ class TagService
 
     public function getAllTags()
     {
-        return $this->tagRepository->all();
+        return $this->tagRepository->paginate(10);
     }
 
     public function getTagById($id)

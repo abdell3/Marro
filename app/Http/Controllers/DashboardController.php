@@ -12,6 +12,7 @@ use App\Services\ThreadService;
 use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -66,7 +67,7 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
         
-        // Get trending communities
+        
         $trendingCommunities = Community::withCount('users as members_count')
             ->orderBy('members_count', 'desc')
             ->take(5)
@@ -91,7 +92,7 @@ class DashboardController extends Controller
     {
         $query = Post::with(['user', 'community'])
             ->withCount(['comments', 'votes' => function ($query) {
-                $query->select(\DB::raw('COALESCE(SUM(value), 0)'));
+                $query->select(DB::raw('COALESCE(SUM(value), 0)'));
             }]);
         
         // Apply sorting
@@ -104,13 +105,13 @@ class DashboardController extends Controller
                 break;
             case 'popular':
             default:
-                // Popular is a combination of votes and recency
+               
                 $query->orderByRaw('(votes_count * 10 + comments_count) DESC')
                       ->orderByDesc('created_at');
                 break;
         }
         
-        // Get posts from communities the user is a member of
+        
         $userCommunityIds = Auth::user()->communities()->pluck('communities.id');
         if ($userCommunityIds->isNotEmpty()) {
             $query->whereIn('community_id', $userCommunityIds);
@@ -127,10 +128,7 @@ class DashboardController extends Controller
      */
     private function getUserActivities($user)
     {
-        // This is a placeholder - you'll need to implement this based on your activity tracking system
-        // For example, you might have an activities table or combine recent posts, comments, and votes
         
-        // Here's a simple implementation that combines posts and comments
         $posts = $user->posts()
             ->with('community')
             ->select('id', 'title', 'user_id', 'community_id', 'created_at')

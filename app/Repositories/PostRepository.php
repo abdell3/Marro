@@ -22,9 +22,9 @@ class PostRepository extends BaseRepository implements PostRepositoryInterface
     protected $orderBy = [];
 
 
-    public function __construct(Post $post)
+    public function __construct(Post $model)
     {
-        parent::__construct( $post);
+        parent::__construct( $model);
         
     }
 
@@ -117,28 +117,28 @@ class PostRepository extends BaseRepository implements PostRepositoryInterface
 
     public function findByCommunity($communityId)
     {
-        return $this->post->where('community_id', $communityId)
+        return $this->model->where('community_id', $communityId)
             ->orderBy('created_at', 'desc')
             ->paginate(15);
     }
 
     public function findByUser($userId)
     {
-        return $this->post->where('user_id', $userId)
+        return $this->model->where('user_id', $userId)
             ->orderBy('created_at', 'desc')
             ->paginate(15);
     }
 
     public function findPopular()
     {
-        return $this->post->orderBy('upvotes', 'desc')
+        return $this->model->orderBy('upvotes', 'desc')
             ->orderBy('created_at', 'desc')
             ->paginate(15);
     }
 
     public function search($query)
     {
-        return $this->post->where('title', 'like', "%{$query}%")
+        return $this->model->where('title', 'like', "%{$query}%")
             ->orWhere('content', 'like', "%{$query}%")
             ->paginate(15);
     }

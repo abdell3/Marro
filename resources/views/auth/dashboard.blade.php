@@ -1,4 +1,4 @@
-@extends('layouts.app')
+<x-layouts.app-layout>
 
 @section('content')
 <div class="container py-6 max-w-6xl mx-auto">
@@ -90,7 +90,7 @@
                                                 <span>{{ $post->comments_count }} Commentaires</span>
                                             </a>
                                             
-                                            <button class="flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-300" onclick="sharePost('{{ route('posts.show', $post) }}', '{{ $post->title }}')">
+                                            <button class="flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-300"onclick="sharePost(@js(route('posts.show', $post)), @js($post->title))">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
                                                 <span>Partager</span>
                                             </button>
@@ -289,7 +289,7 @@
     </div>
     
     <!-- Modal de Signalement -->
-    <div id="reportModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div id="reportModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
             <h3 class="text-lg font-bold mb-4">Signaler un contenu</h3>
             <p class="mb-2">Vous signalez: <span id="reportContentTitle" class="font-medium"></span></p>
@@ -347,7 +347,7 @@
             })
             .catch(console.error);
         } else {
-            // Fallback pour les navigateurs qui ne supportent pas l'API Web Share
+            
             const tempInput = document.createElement('input');
             document.body.appendChild(tempInput);
             tempInput.value = url;
@@ -376,7 +376,7 @@
         .catch(error => console.error('Error:', error));
     }
     
-    // Fonctions pour le modal de signalement
+    
     function openReportModal(type, id, title) {
         document.getElementById('reportableType').value = type;
         document.getElementById('reportableId').value = id;
@@ -390,4 +390,4 @@
     }
 </script>
 @endpush
-@endsection
+</x-layouts.app-layout>

@@ -23,7 +23,7 @@ class RoleService
  
      public function getAllRoles()
      {
-         return $this->roleRepository->all();
+         return $this->roleRepository->withCount();
      }
  
      public function getRoleById($id)
