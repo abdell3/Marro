@@ -3,45 +3,61 @@
 namespace App\Repositories;
 
 use App\Models\Role;
-use App\Models\User;
 use App\Repositories\Interfaces\RoleRepositoryInterface;
 
 class RoleRepository extends BaseRepository implements RoleRepositoryInterface
 {
     /**
-     * Create a new class instance.
+     * RoleRepository constructor.
+     * @param Role $model
      */
     public function __construct(Role $model)
     {
         parent::__construct($model);
     }
 
-    public function findByName($name)
+    /**
+     * Find role by name
+     * @param string $name
+     * @return mixed
+     */
+    public function findByName(string $name)
     {
-        return $this->model->where('name', $name)->first();
+        return $this->model->where('role_name', $name)->first();
     }
 
-    public function findWithPermissions($id)
-    {
-        return $this->model->with('permissions')->findOrFail($id);
-    }
-
-    public function attachPermissions($roleId, $permissionIds)
-    {
-        $role = $this->find($roleId);
-        return $role->permissions()->attach($permissionIds);
-    }
-
-    public function detachPermissions($roleId, $permissionIds)
-    {
-        $role = $this->find($roleId);
-        return $role->permissions()->detach($permissionIds);
-    }
-
-    public function syncPermissions($roleId, $permissionIds)
+    /**
+     * Assign permission to role
+     * @param int $roleId
+     * @param int $permissionId
+     * @return mixed
+     */
+    public function assignPermission(int $roleId, int $permissionId)
     {
         $role = $this->find($roleId);
-        return $role->permissions()->sync($permissionIds);
+        return $role->permissions()->attach($permissionId);
     }
 
+    /**
+     * Remove permission from role
+     * @param int $roleId
+     * @param int $permissionId
+     * @return mixed
+     */
+    public function removePermission(int $roleId, int $permissionId)
+    {
+        $role = $this->find($roleId);
+        return $role->permissions()->detach($permissionId);
+    }
+
+    /**
+     * Get all permissions for role
+     * @param int $roleId
+     * @return mixed
+     */
+    public function getPermissions(int $roleId)
+    {
+        $role = $this->find($roleId);
+        return $role->permissions;
+    }
 }

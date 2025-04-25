@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Badge;
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -16,44 +15,34 @@ class BadgeSeeder extends Seeder
     {
         $badges = [
             [
-                'name' => 'Newcomer',
-                'description' => 'Joined the community',
-                'icon' => 'newcomer.png',
+                'nom' => 'Nouveau venu',
+                'critere' => 'Inscrit sur le site',
+                'logo' => 'badge-nouveau.png'
             ],
             [
-                'name' => 'Contributor',
-                'description' => 'Made 10 posts or comments',
-                'icon' => 'contributor.png',
+                'nom' => 'Contributeur',
+                'critere' => 'A créé au moins 10 posts',
+                'logo' => 'badge-contributeur.png'
             ],
             [
-                'name' => 'Popular',
-                'description' => 'Received 100 upvotes',
-                'icon' => 'popular.png',
+                'nom' => 'Expert',
+                'critere' => 'A obtenu au moins 100 upvotes sur ses posts',
+                'logo' => 'badge-expert.png'
             ],
             [
-                'name' => 'Community Builder',
-                'description' => 'Created a community with 50+ members',
-                'icon' => 'community_builder.png',
+                'nom' => 'Commentateur',
+                'critere' => 'A laissé au moins 50 commentaires',
+                'logo' => 'badge-commentateur.png'
             ],
             [
-                'name' => 'Verified',
-                'description' => 'Verified user',
-                'icon' => 'verified.png',
-            ],
+                'nom' => 'Populaire',
+                'critere' => 'A au moins 500 abonnés à ses communautés',
+                'logo' => 'badge-populaire.png'
+            ]
         ];
 
-        foreach ($badges as $badgeData) {
-            Badge::create($badgeData);
-        }
-
-        
-        $users = User::all();
-        $badges = Badge::all();
-
-        foreach ($users as $user) {
-            
-            $randomBadges = $badges->random(rand(1, 3));
-            $user->badges()->attach($randomBadges);
+        foreach ($badges as $badge) {
+            Badge::create($badge);
         }
     }
 }

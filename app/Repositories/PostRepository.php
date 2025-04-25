@@ -4,144 +4,94 @@ namespace App\Repositories;
 
 use App\Models\Post;
 use App\Repositories\Interfaces\PostRepositoryInterface;
-use Illuminate\Pagination\LengthAwarePaginator;
-use App\Repositories\BaseRepository;
-use Illuminate\Database\Eloquent\Model;
 
 class PostRepository extends BaseRepository implements PostRepositoryInterface
 {
     /**
-     * Create a new class instance.
+     * PostRepository constructor.
+     * @param Post $model
      */
-
-
-
-    protected $post;
-    protected $withRelations = [];
-    protected $filters = [];
-    protected $orderBy = [];
-
-
-    public function __construct(Post $post)
+    public function __construct(Post $model)
     {
-        parent::__construct( $post);
-        
+        parent::__construct($model);
     }
 
-
-    // public function testing()
-    // {
-    // // public function withRelations(array $relations)
-    // // {
-    // //     $this->withRelations = $relations;
-    // //     return $this;
-    // // }
-
-    // // public function filterByCommunity(int $communityId)
-    // // {
-    // //     $this->filters['community_id'] = $communityId;
-    // //     return $this;
-    // // }
-
-
-    // // public function filterByTag(int $tagId)
-    // // {
-    // //     $this->filters['tag_id'] = $tagId;
-    // //     return $this;
-    // // }
-    
-
-    // // // public function orderBy(string $column, string $direction = 'asc')
-    // // // {
-    // // //     $this->orderBy = [$column, $direction];
-    // // //     return $this;
-    // // // }
-
-
-    // // public function paginate(int $perPage = 10): LengthAwarePaginator
-    // // {
-    // //     $query = $this->post->with($this->withRelations);
-
-        
-    // //     foreach ($this->filters as $key => $value) {
-    // //         if ($key === 'tag_id') {
-    // //             $query->whereHas('tags', function ($q) use ($value) {
-    // //                 $q->where('tags.id', $value);
-    // //             });
-    // //         } else {
-    // //             $query->where($key, $value);
-    // //         }
-    // //     }
-
-        
-    // //     if (!empty($this->orderBy)) {
-    // //         $query->orderBy($this->orderBy[0], $this->orderBy[1]);
-    // //     }
-
-    // //     return $query->paginate($perPage);
-    // // }
-
-
-    // // public function allPosts()
-    // // {
-    // //     return $this->post->with($this->withRelations)->get();
-    // // }
-
-    // // public function findPost($id)
-    // // {
-    // //     return $this->post->with($this->withRelations)->findOrFail($id);  
-    // // }
-
-    // // public function createPost(array $data)
-    // // {
-    // //     return $this->post->create($data);
-    // // }
-
-
-    // // public function updatePost($id, array $data)
-    // // {
-    // //     $post = $this->post->findOrFail($id);
-    // //     $post->update($data);
-    // //     return $post;
-    // // }
-
-
-    // // public function deletePost($id)
-    // // {
-    // //     $post = $this->post->findOrFail($id);
-    // //     $post->delete();
-    // //     return $post;
-    // // }
-    // }
-    
-
-    public function findByCommunity($communityId)
+    /**
+     * Get posts by user
+     * @param int $userId
+     * @return mixed
+     */
+    public function getByUser(int $userId)
     {
-        return $this->post->where('community_id', $communityId)
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+        return $this->model->where('auteur_id', $userId)->get();
     }
 
-    public function findByUser($userId)
+    /**
+     * Get posts by community
+     * @param int $communityId
+     * @return mixed
+     */
+    public function getByCommunity(int $communityId)
     {
-        return $this->post->where('user_id', $userId)
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+        return $this->model->where('community_id', $communityId)->get();
     }
 
-    public function findPopular()
+    /**
+     * Get posts by tag
+     * @param int $tagId
+     * @return mixed
+     */
+    public function getByTag(int $tagId)
     {
-        return $this->post->orderBy('upvotes', 'desc')
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+        return $this->model->whereHas('tags', function ($query) use ($tagId) {
+            $query->where('tags.id', $tagId);
+        })->get();
     }
 
-    public function search($query)
+    /**
+     * Get most popular posts
+     * @param int $limit
+     * @return mixed
+     */
+    public function getMostPopular(int $limit = 10)
     {
-        return $this->post->where('title', 'like', "%{$query}%")
-            ->orWhere('content', 'like', "%{$query}%")
-            ->paginate(15);
+        return $this->model->orderBy('like', 'desc')->limit($limit)->get();
     }
 
+    /**
+     * Add tag to post
+     * @param int $postId
+     * @param int $tagId
+     * @return mixed
+     */
+    public function addTag(int $postId, int $tagId)
+    {
+        $post = $this->find($postId);
+        return $post->tags()->attach($tagId);
+    }
 
+    /**
+     * Remove tag from post
+     * @param int $postId
+     * @param int $tagId
+     * @return mixed
+     */
+    public function removeTag(int $postId, int $tagId)
+    {
+        $post = $this->find($postId);
+        return $post->tags()->detach($tagId);
+    }
+
+    /**
+     * Update post likes count
+     * @param int $postId
+     * @param int $delta
+     * @return mixed
+     */
+    public function updateLikes(int $postId, int $delta)
+    {
+        $post = $this->find($postId);
+        $post->like += $delta;
+        return $post->save();
+    }
 }

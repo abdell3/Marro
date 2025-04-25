@@ -4,34 +4,38 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use App\Models\Role;
-use App\Models\Permission;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'nom',
+        'prenom',
         'email',
         'password',
-        'username',
-        'bio',
+        'role_id',
+        'badge_id',
+        'token',
         'avatar',
+        'preferences',
     ];
 
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $hidden = [
         'password',
@@ -39,102 +43,106 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * The attributes that should be cast.
      *
-     * @return array<string, string>
+     * @var array<string, string>
      */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'preferences' => 'array',
+    ];
+    
+    /**
+     * Get the role that owns the user.
+     */
+    public function role(): BelongsTo
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->belongsTo(Role::class);
     }
-
-
-
-    public function roles()
+    
+    /**
+     * Get the badge that owns the user.
+     */
+    public function badge(): BelongsTo
     {
-        return $this->belongsToMany(Role::class, 'user_role');
+        return $this->belongsTo(Badge::class);
     }
-
-    public function permissions()
+    
+    /**
+     * Get the communities that belong to the user.
+     */
+    public function communities(): BelongsToMany
     {
-        return $this->roles()->with('permissions')->get()
-        ->pluck('permissions')
-        ->flatten()
-        ->unique('id');
+        return $this->belongsToMany(Community::class, 'user_community');
     }
-
-
-    public function hasRole($role)
+    
+    /**
+     * Get the posts for the user.
+     */
+    public function posts(): HasMany
     {
-        return $this->roles->contains('name', $role);
+        return $this->hasMany(Post::class, 'auteur_id');
     }
-
-
-
-    public function hasPermission($permission)
+    
+    /**
+     * Get the comments for the user.
+     */
+    public function comments(): HasMany
     {
-        foreach ($this->roles as $role) {
-            if ($role->permissions->contains('name', $permission)) {
-                return true;
-            }
-        }
-        
-        return false;
+        return $this->hasMany(Comment::class, 'auteur_id');
     }
-
-
-
-    public function profile()
+    
+    /**
+     * Get the polls for the user.
+     */
+    public function polls(): HasMany
     {
-        if($this->hasRole('user'))
-        {
-            return $this->user;
-        }
-        elseif($this->hasRole('admin'))
-        {
-            return $this->admin;
-        }
-
-
-        return null;
+        return $this->hasMany(Poll::class, 'utilisateur_id');
     }
-
-
-    public function communities()
+    
+    /**
+     * Get the reports for the user.
+     */
+    public function reports(): HasMany
     {
-        return $this->belongsToMany(Community::class, 'community_user');
+        return $this->hasMany(Report::class, 'utilisateur_id');
     }
-
-
-    public function posts()
+    
+    /**
+     * Get the saved posts for the user.
+     */
+    public function savedPosts(): BelongsToMany
     {
-        return $this->hasMany(Post::class);
+        return $this->belongsToMany(Post::class, 'save_posts');
     }
-
-    public function comments()
+    
+    /**
+     * Get the threads for the user.
+     */
+    public function threads(): HasMany
     {
-        return $this->hasMany(Comment::class);
+        return $this->hasMany(Thread::class);
     }
-
-
-    public function savedPosts()
+    
+    /**
+     * Check if user has permission
+     * 
+     * @param string $permission
+     * @return bool
+     */
+    public function hasPermission(string $permission): bool
     {
-        return $this->hasMany(SavedPost::class);
+        return $this->role?->permissions()->where('name', $permission)->exists() ?? false;
     }
-
-    public function reports()
+    
+    /**
+     * Check if user has role
+     * 
+     * @param string $roleName
+     * @return bool
+     */
+    public function hasRole(string $roleName): bool
     {
-        return $this->hasMany(Report::class);
+        return $this->role?->role_name === $roleName;
     }
-
-
-    public function badges()
-    {
-        return $this->belongsToMany(Badge::class, 'badge_user');
-    }
-
-
 }

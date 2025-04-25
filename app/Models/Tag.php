@@ -2,22 +2,24 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Tag extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
-        'name',
-        'slug'
+        'title',
+        'description',
     ];
 
-    public function posts()
+    /**
+     * Get the posts that belong to the tag.
+     */
+    public function posts(): BelongsToMany
     {
-        return $this->belongsToMany(Post::class, 'post_tag');
-    }
-
-    public function communities()
-    {
-        return $this->belongsToMany(Community::class, 'community_tag');
+        return $this->belongsToMany(Post::class);
     }
 }

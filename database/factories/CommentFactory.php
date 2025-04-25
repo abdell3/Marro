@@ -2,32 +2,29 @@
 
 namespace Database\Factories;
 
-use App\Models\Comment;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Comment>
  */
-// class CommentFactory extends Factory
+class CommentFactory extends Factory
 {
     /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
      */
-
-    // protected $model = Comment::class;
-
-    // public function definition(): array
-    // {
-    //     return [
-    //         'content' => $this->faker->paragraph, 
-    //         'user_id' => User::factory(), 
-    //         'post_id' => Post::factory(), 
-    //         'parent_id' => null,
-    //     ];
-    // }
+    public function definition(): array
+    {
+        $post = Post::inRandomOrder()->first() ?? Post::factory()->create();
+        
+        return [
+            'post_id' => $post->id,
+            'auteur_id' => User::inRandomOrder()->first()->id ?? User::factory(),
+            'contenu' => fake()->paragraphs(rand(1, 3), true),
+            'datePublication' => fake()->dateTimeBetween($post->datePublication, 'now'),
+        ];
+    }
 }

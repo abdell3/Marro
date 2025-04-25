@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Community;
 use App\Models\Post;
+use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -15,38 +16,32 @@ class PostSeeder extends Seeder
      */
     public function run(): void
     {
-        $communities = Community::all();
         $users = User::all();
-        
-        foreach ($communities as $community) {
+        $communities = Community::all();
+        $tags = Tag::all();
+
+        // Create 50 posts
+        for ($i = 0; $i < 50; $i++) {
+            $user = $users->random();
+            $community = $communities->random();
             
-            $communityUsers = $community->users;
-            
-            
-            $postCount = rand(5, 15);
-            
-            for ($i = 0; $i < $postCount; $i++) {
-                $user = $communityUsers->random();
-                
-                $post = Post::create([
-                    'title' => 'Sample Post ' . ($i + 1) . ' in ' . $community->name,
-                    'content' => 'This is a sample post content for the ' . $community->name . ' community. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-                    'user_id' => $user->id,
-                    'community_id' => $community->id,
-                    'upvotes' => rand(0, 100),
-                    'downvotes' => rand(0, 20),
-                    'created_at' => now()->subDays(rand(0, 30)),
-                ]);
-                
-                
-                $tagCount = rand(0, 3);
-                if ($tagCount > 0) {
-                    $communityTags = $community->tags;
-                    if ($communityTags->count() > 0) {
-                        $randomTags = $communityTags->random(min($tagCount, $communityTags->count()));
-                        $post->tags()->attach($randomTags);
-                    }
-                }
+            // Make sure user is subscribed to this community
+            $user->communities()->syncWithoutDetaching([$community->id]);
+
+            $post = Post::create([
+                'titre' => "Post #$i dans {$community->theme_name}",
+                'contenu' => "Ceci est le contenu du post #$i dans la communauté {$community->theme_name}. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.",
+                'typeContenu' => ['text', 'image', 'link', 'video'][rand(0, 3)],
+                'datePublication' => now()->subDays(rand(0, 30))->subHours(rand(0, 24)),
+                'auteur_id' => $user->id,
+                'community_id' => $community->id,
+                'like' => rand(-10, 100)
+            ]);
+
+            // Attach 1-3 random tags to the post
+            $randomTags = $tags->random(rand(1, 3));
+            foreach ($randomTags as $tag) {
+                $post->tags()->attach($tag->id);
             }
         }
     }

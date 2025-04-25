@@ -2,9 +2,19 @@
 
 namespace App\Repositories\Interfaces;
 
-interface CommentRepositoryInterface extends RepositoryInterface
+interface CommentRepositoryInterface extends BaseRepositoryInterface
 {
-    public function findByPost($postId);
-    public function findByUser($userId);
-    public function findReplies($commentId);
+    /**
+     * Get comments by post
+     * @param int $postId
+     * @return mixed
+     */
+    public function getByPost(int $postId);
+
+    /**
+     * Get comments by user
+     * @param int $userId
+     * @return mixed
+     */
+    public function getByUser(int $userId);
 }

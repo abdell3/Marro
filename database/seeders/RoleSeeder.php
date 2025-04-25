@@ -15,17 +15,17 @@ class RoleSeeder extends Seeder
     {
         $roles = [
             [
-                'name' => 'Admin',
-                'description' => 'Administrator with full access',
+                'role_name' => 'admin',
+                'role_description' => 'Administrateur du site'
             ],
             [
-                'name' => 'Moderator',
-                'description' => 'Can moderate content and users',
+                'role_name' => 'user',
+                'role_description' => 'Utilisateur standard'
             ],
             [
-                'name' => 'User',
-                'description' => 'Regular user',
-            ],
+                'role_name' => 'moderator',
+                'role_description' => 'Modérateur'
+            ]
         ];
 
         foreach ($roles as $role) {

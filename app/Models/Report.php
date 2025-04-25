@@ -4,53 +4,47 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Report extends Model
 {
-    /** @use HasFactory<\Database\Factories\ReportFactory> */
     use HasFactory;
+
     protected $fillable = [
-        'user_id',
-        'report_type_id',
         'reportable_id',
         'reportable_type',
-        'description',
-        'status',
-
+        'utilisateur_id',
+        'date',
+        'raison',
+        'type_report_id',
     ];
 
+    protected $casts = [
+        'date' => 'datetime',
+    ];
 
-    
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
-    
-    public function reportable()
+    /**
+     * Get the reportable model.
+     */
+    public function reportable(): MorphTo
     {
         return $this->morphTo();
     }
 
-    public function reportType()
+    /**
+     * Get the user that owns the report.
+     */
+    public function utilisateur(): BelongsTo
     {
-        return $this->belongsTo(ReportType::class);
+        return $this->belongsTo(User::class, 'utilisateur_id');
     }
 
-    // public function scopePending($query)
-    // {
-    //     return $query->where('status', 'pending');
-    // }
-
-    // public function scopeApproved($query)
-    // {
-    //     return $query->where('status', 'approved');
-    // }
-
-
-    // public function scopeRejected($query)
-    // {
-    //     return $query->where('status', 'rejected');
-    // }
-
-
+    /**
+     * Get the report type that owns the report.
+     */
+    public function type_report(): BelongsTo
+    {
+        return $this->belongsTo(ReportType::class, 'type_report_id');
+    }
 }

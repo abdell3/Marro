@@ -4,21 +4,22 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Report;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ReportType extends Model
 {
-
     use HasFactory;
 
-
     protected $fillable = [
-        'name',
-        'description'
+        'type',
+        'smallDescription',
     ];
 
-    public function reports()
+    /**
+     * Get the reports for the report type.
+     */
+    public function reports(): HasMany
     {
-        return $this->hasMany(Report::class);
+        return $this->hasMany(Report::class, 'type_report_id');
     }
 }

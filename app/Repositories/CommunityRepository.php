@@ -2,71 +2,60 @@
 
 namespace App\Repositories;
 
-
 use App\Models\Community;
 use App\Repositories\Interfaces\CommunityRepositoryInterface;
 
 class CommunityRepository extends BaseRepository implements CommunityRepositoryInterface
 {
     /**
-     * Create a new class instance.
+     * CommunityRepository constructor.
+     * @param Community $model
      */
+    public function __construct(Community $model)
+    {
+        parent::__construct($model);
+    }
 
-     public function __construct(Community $model)
-     {
-         parent::__construct($model);
-     }
- 
-     public function findBySlug($slug)
-     {
-         return $this->model->where('slug', $slug)->firstOrFail();
-     }
- 
-     public function findPopular()
-     {
-         return $this->model->withCount('users')
-             ->orderBy('users_count', 'desc')
-             ->paginate(15);
-     }
- 
-     public function search($query)
-     {
-         return $this->model->where('name', 'like', "%{$query}%")
-             ->orWhere('description', 'like', "%{$query}%")
-             ->paginate(15);
-     }
-    
-    // public function oldLogique()
-    // {
-    //     function all()
-    //    {
-    //        return $this->community->all();
-    //    }
-    
-    //     function find($id)
-    //    {
-    //        return $this->community->findOrFail($id);
-    //    }
-    
-    //     function create(array $data)
-    //    {
-    //        return $this->community->create($data);
-    //    }
-    
-    //     function update($id, array $data)
-    //    {
-    //        $community = $this->community->findOrFail($id);
-    //        $community->update($data);
-    //        return $community;
-    //    }
-    
-    //     function delete($id)
-    //    {
-    //        $community = $this->community->findOrFail($id);
-    //        $community->delete();
-    //        return $community;
-    //    }
+    /**
+     * Find community by theme name
+     * @param string $themeName
+     * @return mixed
+     */
+    public function findByThemeName(string $themeName)
+    {
+        return $this->model->where('theme_name', $themeName)->first();
+    }
 
-    // }
-    
+    /**
+     * Get subscribers of community
+     * @param int $communityId
+     * @return mixed
+     */
+    public function getSubscribers(int $communityId)
+    {
+        $community = $this->find($communityId);
+        return $community->abonnes;
+    }
+
+    /**
+     * Get posts from community
+     * @param int $communityId
+     * @return mixed
+     */
+    public function getPosts(int $communityId)
+    {
+        $community = $this->find($communityId);
+        return $community->posts;
+    }
+
+    /**
+     * Get threads from community
+     * @param int $communityId
+     * @return mixed
+     */
+    public function getThreads(int $communityId)
+    {
+        $community = $this->find($communityId);
+        return $community->threads;
+    }
 }

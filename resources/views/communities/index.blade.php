@@ -1,97 +1,132 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Communities') }}
-        </h2>
-    </x-slot>
-
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 bg-white border-b border-gray-200">
+<x-layout.app title="Communautés">
+    <div class="container mx-auto">
+        <div class="flex flex-col md:flex-row gap-6">
+            <!-- Main Content -->
+            <div class="w-full md:w-3/4">
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
                     <div class="flex justify-between items-center mb-6">
-                        <div>
-                            <a href="{{ route('communities.index') }}" class="text-gray-700 {{ !request()->has('popular') ? 'font-bold' : '' }}">
-                                All Communities
-                            </a>
-                            <span class="mx-2">|</span>
-                            <a href="{{ route('communities.index', ['popular' => true]) }}" class="text-gray-700 {{ request()->has('popular') ? 'font-bold' : '' }}">
-                                Popular
-                            </a>
-                        </div>
+                        <h1 class="text-2xl font-bold text-gray-800">Toutes les communautés</h1>
                         
                         @auth
-                            <a href="{{ route('communities.create') }}" class="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">
-                                Create Community
-                            </a>
+                            @if(auth()->user()->hasPermission('create-community'))
+                                <a href="{{ route('communities.create') }}" class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-full">
+                                    Créer une communauté
+                                </a>
+                            @endif
                         @endauth
                     </div>
                     
-                    @if(count($communities) > 0)
-                        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    @if($communities->count() > 0)
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             @foreach($communities as $community)
-                                <div class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                                    <div class="h-24 bg-gradient-to-r from-orange-400 to-orange-600 relative">
-                                        @if($community->banner)
-                                            <img src="{{ asset('storage/' . $community->banner) }}" alt="{{ $community->name }}" class="w-full h-full object-cover">
-                                        @endif
-                                    </div>
-                                    <div class="p-4 relative">
-                                        <div class="absolute -top-8 left-4 w-16 h-16 bg-white rounded-full border-4 border-white overflow-hidden">
-                                            @if($community->icon)
-                                                <img src="{{ asset('storage/' . $community->icon) }}" alt="{{ $community->name }}" class="w-full h-full object-cover">
-                                            @else
-                                                <div class="w-full h-full bg-orange-500 flex items-center justify-center text-white text-xl font-bold">
-                                                    {{ substr($community->name, 0, 1) }}
-                                                </div>
-                                            @endif
+                                <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                                    <div class="flex items-start">
+                                        <div class="w-12 h-12 bg-blue-500 rounded-full mr-4 flex items-center justify-center text-white font-bold">
+                                            {{ substr($community->theme_name, 0, 1) }}
                                         </div>
-                                        
-                                        <div class="mt-8">
-                                            <a href="{{ route('communities.show', $community->slug) }}" class="text-lg font-semibold hover:text-orange-500">
-                                                r/{{ $community->name }}
-                                            </a>
-                                            <p class="text-gray-500 text-sm mt-1">{{ $community->users->count() }} members</p>
-                                            <p class="text-gray-700 text-sm mt-2 line-clamp-2">{{ $community->description }}</p>
-                                            
-                                            @auth
-                                                <div class="mt-4">
-                                                    @if(Auth::user()->communities->contains($community->id))
-                                                        <form action="{{ route('communities.leave', $community->id) }}" method="POST">
+                                        <div class="flex-1">
+                                            <h3 class="text-lg font-medium">
+                                                <a href="{{ route('communities.show', $community->id) }}" class="hover:underline">
+                                                    {{ $community->theme_name }}
+                                                </a>
+                                            </h3>
+                                            <p class="text-sm text-gray-500 mb-2">{{ $community->abonnes->count() }} membres</p>
+                                            <p class="text-gray-700">
+                                                {{ Str::limit($community->description, 100) }}
+                                            </p>
+                                            <div class="mt-3">
+                                                @auth
+                                                    @if(auth()->user()->communities->contains($community->id))
+                                                        <form action="{{ route('communities.subscribe', $community->id) }}" method="POST" class="inline">
                                                             @csrf
-                                                            <button type="submit" class="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
-                                                                Leave
+                                                            <button type="submit" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-1 px-3 rounded-full">
+                                                                Désabonner
                                                             </button>
                                                         </form>
                                                     @else
-                                                        <form action="{{ route('communities.join', $community->id) }}" method="POST">
+                                                        <form action="{{ route('communities.subscribe', $community->id) }}" method="POST" class="inline">
                                                             @csrf
-                                                            <button type="submit" class="w-full px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">
-                                                                Join
+                                                            <button type="submit" class="text-sm bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium py-1 px-3 rounded-full">
+                                                                S'abonner
                                                             </button>
                                                         </form>
                                                     @endif
-                                                </div>
-                                            @endauth
+                                                @else
+                                                    <a href="{{ route('login') }}" class="text-sm bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium py-1 px-3 rounded-full">
+                                                        S'abonner
+                                                    </a>
+                                                @endauth
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             @endforeach
                         </div>
-                        
-                        <div class="mt-6">
-                            {{ $communities->links() }}
-                        </div>
                     @else
                         <div class="text-center py-8">
-                            <p class="text-gray-500">No communities found.</p>
+                            <p class="text-gray-500 mb-4">Aucune communauté n'a été créée pour le moment.</p>
+                            
                             @auth
-                                <a href="{{ route('communities.create') }}" class="mt-4 inline-block px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">Create a Community</a>
+                                @if(auth()->user()->hasPermission('create-community'))
+                                    <a href="{{ route('communities.create') }}" class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-full">
+                                        Créer la première communauté
+                                    </a>
+                                @endif
                             @endauth
                         </div>
                     @endif
                 </div>
             </div>
+            
+            <!-- Sidebar -->
+            <div class="w-full md:w-1/4">
+                <!-- About Communities -->
+                <div class="bg-white rounded-lg shadow p-4 mb-6">
+                    <h3 class="text-lg font-medium mb-3">À propos des communautés</h3>
+                    <p class="text-gray-700 mb-4">
+                        Les communautés sont des groupes créés par des utilisateurs pour discuter de sujets spécifiques. Rejoignez celles qui vous intéressent et participez aux discussions !
+                    </p>
+                    
+                    @auth
+                        @if(auth()->user()->hasPermission('create-community'))
+                            <a href="{{ route('communities.create') }}" class="block text-center bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-full">
+                                Créer une communauté
+                            </a>
+                        @endif
+                    @else
+                        <a href="{{ route('login') }}" class="block text-center bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-full">
+                            Connexion pour créer
+                        </a>
+                    @endauth
+                </div>
+                
+                <!-- Community Guidelines -->
+                <div class="bg-white rounded-lg shadow p-4">
+                    <h3 class="text-lg font-medium mb-3">Règles des communautés</h3>
+                    <ul class="space-y-2 text-gray-700">
+                        <li class="flex items-start">
+                            <span class="text-red-500 mr-2">•</span>
+                            <span>Respectez les autres membres de la communauté.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-red-500 mr-2">•</span>
+                            <span>Publiez du contenu pertinent pour la communauté.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-red-500 mr-2">•</span>
+                            <span>Ne faites pas de spam ou de publicité non sollicitée.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-red-500 mr-2">•</span>
+                            <span>Respectez les droits d'auteur et la propriété intellectuelle.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-red-500 mr-2">•</span>
+                            <span>Signalez tout contenu inapproprié aux modérateurs.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
-</x-app-layout>
+</x-layout.app>

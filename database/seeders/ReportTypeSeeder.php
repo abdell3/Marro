@@ -15,29 +15,29 @@ class ReportTypeSeeder extends Seeder
     {
         $reportTypes = [
             [
-                'name' => 'Spam',
-                'description' => 'Repeated, unwanted, or unsolicited content',
+                'type' => 'Contenu inapproprié',
+                'smallDescription' => 'Contenu qui viole les règles de la communauté'
             ],
             [
-                'name' => 'Harassment',
-                'description' => 'Threatening, bullying, or intimidating content',
+                'type' => 'Spam',
+                'smallDescription' => 'Contenu répétitif ou publicitaire non sollicité'
             ],
             [
-                'name' => 'Hate Speech',
-                'description' => 'Content that promotes hate based on identity or vulnerability',
+                'type' => 'Harcèlement',
+                'smallDescription' => 'Comportement abusif envers un utilisateur'
             ],
             [
-                'name' => 'Misinformation',
-                'description' => 'False or misleading content presented as fact',
+                'type' => 'Fausse information',
+                'smallDescription' => 'Contenu délibérément trompeur ou faux'
             ],
             [
-                'name' => 'Violence',
-                'description' => 'Content that encourages, glorifies, or incites violence',
+                'type' => 'Contenu illégal',
+                'smallDescription' => 'Contenu qui enfreint la loi'
             ],
             [
-                'name' => 'Other',
-                'description' => 'Other rule violation not listed above',
-            ],
+                'type' => 'Autre',
+                'smallDescription' => 'Autre raison non listée'
+            ]
         ];
 
         foreach ($reportTypes as $reportType) {

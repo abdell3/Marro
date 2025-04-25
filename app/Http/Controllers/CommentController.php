@@ -2,63 +2,209 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreCommentRequest;
-use App\Http\Requests\UpdateCommentRequest;
-use App\Models\Comment;
+use App\Services\Interfaces\AuthServiceInterface;
+use App\Services\Interfaces\CommentServiceInterface;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class CommentController extends Controller
 {
-    public function __construct()
-    {
+    /**
+     * @var CommentServiceInterface
+     */
+    protected $commentService;
+
+    /**
+     * @var AuthServiceInterface
+     */
+    protected $authService;
+
+    /**
+     * CommentController constructor.
+     */
+    public function __construct(
+        CommentServiceInterface $commentService,
+        AuthServiceInterface $authService
+    ) {
+        $this->commentService = $commentService;
+        $this->authService = $authService;
+        
+        // Apply auth middleware for all actions
         $this->middleware('auth');
     }
 
-    public function store(StoreCommentRequest $request)
+    /**
+     * Store a newly created comment in storage.
+     */
+    public function store(Request $request)
     {
-        $comment = Comment::create([
-            'content' => $request->content,
-            'user_id' => Auth::id(),
-            'post_id' => $request->post_id,
-            'parent_id' => $request->parent_id,
+        $validator = Validator::make($request->all(), [
+            'post_id' => ['required', 'exists:posts,id'],
+            'contenu' => ['required', 'string'],
+            'parent_id' => ['nullable', 'exists:comments,id'],
         ]);
 
-        return redirect()->back()->with('success', 'Comment added successfully.');
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $user = $this->authService->user();
+
+        $comment = $this->commentService->createComment([
+            'post_id' => $request->input('post_id'),
+            'auteur_id' => $user->id,
+            'parent_id' => $request->input('parent_id'),
+            'contenu' => $request->input('contenu'),
+        ]);
+
+        return redirect()->route('posts.show', $request->input('post_id'))
+            ->with('success', 'Commentaire ajouté avec succès.')
+            ->withFragment('comment-' . $comment->id);
     }
 
-    public function edit(Comment $comment)
+    /**
+     * Show reply form for a specific comment.
+     */
+    public function reply($id)
     {
-        $this->authorize('update', $comment);
-        return view('comments.edit', compact('comment'));
+        $comment = $this->commentService->getCommentById($id);
+        
+        return view('comments.reply', [
+            'comment' => $comment
+        ]);
+    }
+    
+    /**
+     * Store a reply to a comment.
+     */
+    public function storeReply(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'contenu' => ['required', 'string'],
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+        
+        $parentComment = $this->commentService->getCommentById($id);
+        $user = $this->authService->user();
+
+        $comment = $this->commentService->createComment([
+            'post_id' => $parentComment->post_id,
+            'auteur_id' => $user->id,
+            'parent_id' => $id,
+            'contenu' => $request->input('contenu'),
+        ]);
+
+        return redirect()->route('posts.show', $parentComment->post_id)
+            ->with('success', 'Réponse ajoutée avec succès.')
+            ->withFragment('comment-' . $comment->id);
     }
 
-    public function update(UpdateCommentRequest $request, Comment $comment)
+    /**
+     * Show the form for editing the specified comment.
+     */
+    public function edit($id)
     {
-        $this->authorize('update', $comment);
-        $comment->update($request->validated());
-        return redirect()->route('posts.show', $comment->post_id)->with('success', 'Comment updated successfully.');
+        $user = $this->authService->user();
+        $comment = $this->commentService->getCommentById($id);
+
+        // Check if user is the author or has permission to edit others' comments
+        if ($comment->auteur_id !== $user->id && !$user->hasPermission('edit-any-comment')) {
+            return redirect()->route('posts.show', $comment->post_id)
+                ->with('error', 'Vous n\'êtes pas autorisé à modifier ce commentaire.');
+        }
+
+        return view('comments.edit', [
+            'comment' => $comment
+        ]);
     }
 
-    public function destroy(Comment $comment)
+    /**
+     * Update the specified comment in storage.
+     */
+    public function update(Request $request, $id)
     {
-        $this->authorize('delete', $comment);
+        $validator = Validator::make($request->all(), [
+            'contenu' => ['required', 'string'],
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $user = $this->authService->user();
+        $comment = $this->commentService->getCommentById($id);
+
+        // Check if user is the author or has permission to edit others' comments
+        if ($comment->auteur_id !== $user->id && !$user->hasPermission('edit-any-comment')) {
+            return redirect()->route('posts.show', $comment->post_id)
+                ->with('error', 'Vous n\'êtes pas autorisé à modifier ce commentaire.');
+        }
+
+        $comment = $this->commentService->updateComment($id, [
+            'contenu' => $request->input('contenu'),
+        ]);
+
+        return redirect()->route('posts.show', $comment->post_id)
+            ->with('success', 'Commentaire mis à jour avec succès.');
+    }
+
+    /**
+     * Remove the specified comment from storage.
+     */
+    public function destroy($id)
+    {
+        $user = $this->authService->user();
+        $comment = $this->commentService->getCommentById($id);
+
+        // Check if user is the author or has permission to delete others' comments
+        if ($comment->auteur_id !== $user->id && !$user->hasPermission('delete-any-comment')) {
+            return redirect()->route('posts.show', $comment->post_id)
+                ->with('error', 'Vous n\'êtes pas autorisé à supprimer ce commentaire.');
+        }
+
         $postId = $comment->post_id;
-        $comment->delete();
-        return redirect()->route('posts.show', $postId)->with('success', 'Comment deleted successfully.');
+        $this->commentService->deleteComment($id);
+
+        return redirect()->route('posts.show', $postId)
+            ->with('success', 'Commentaire supprimé avec succès.');
     }
 
-    public function upvote(Comment $comment)
+    /**
+     * Report a comment.
+     */
+    public function report(Request $request, $id)
     {
-        $comment->upvotes += 1;
-        $comment->save();
-        return back();
-    }
+        $validator = Validator::make($request->all(), [
+            'reason' => ['required', 'string'],
+            'report_type_id' => ['required', 'exists:report_types,id'],
+        ]);
 
-    public function downvote(Comment $comment)
-    {
-        $comment->downvotes += 1;
-        $comment->save();
-        return back();
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $user = $this->authService->user();
+        $comment = $this->commentService->getCommentById($id);
+
+        $result = $this->commentService->reportComment(
+            $id,
+            $user->id,
+            $request->input('reason'),
+            $request->input('report_type_id')
+        );
+
+        return redirect()->route('posts.show', $comment->post_id)
+            ->with('success', 'Commentaire signalé avec succès.');
     }
 }

@@ -4,21 +4,23 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Badge extends Model
 {
-    /** @use HasFactory<\Database\Factories\BadgeFactory> */
     use HasFactory;
 
-
     protected $fillable = [
-        'name',
-        'description',
-        'icon',
+        'nom',
+        'critere',
+        'logo',
     ];
 
-    public function users()
+    /**
+     * Get the users for the badge.
+     */
+    public function users(): HasMany
     {
-        return $this->belongsToMany(User::class, 'badge_user');
+        return $this->hasMany(User::class);
     }
 }

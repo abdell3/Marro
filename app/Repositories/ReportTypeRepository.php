@@ -8,15 +8,21 @@ use App\Repositories\Interfaces\ReportTypeRepositoryInterface;
 class ReportTypeRepository extends BaseRepository implements ReportTypeRepositoryInterface
 {
     /**
-     * Create a new class instance.
+     * ReportTypeRepository constructor.
+     * @param ReportType $model
      */
     public function __construct(ReportType $model)
     {
         parent::__construct($model);
     }
 
-    public function findByName($name)
+    /**
+     * Find report type by name
+     * @param string $type
+     * @return mixed
+     */
+    public function findByType(string $type)
     {
-        return $this->model->where('name', $name)->first();
+        return $this->model->where('type', $type)->first();
     }
 }

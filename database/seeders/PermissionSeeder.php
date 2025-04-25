@@ -15,44 +15,98 @@ class PermissionSeeder extends Seeder
     public function run(): void
     {
         $permissions = [
-            [
-                'name' => 'manage_users',
-                'description' => 'Can manage users',
-            ],
-            [
-                'name' => 'manage_communities',
-                'description' => 'Can manage communities',
-            ],
-            [
-                'name' => 'manage_posts',
-                'description' => 'Can manage posts',
-            ],
-            [
-                'name' => 'manage_comments',
-                'description' => 'Can manage comments',
-            ],
-            [
-                'name' => 'manage_reports',
-                'description' => 'Can manage reports',
-            ],
+            
+            'create-user',
+            'read-user',
+            'update-user',
+            'delete-user',
+            
+           
+            'create-post',
+            'read-post',
+            'update-post',
+            'delete-post',
+            
+            
+            'create-comment',
+            'read-comment',
+            'update-comment',
+            'delete-comment',
+            
+           
+            'create-community',
+            'read-community',
+            'update-community',
+            'delete-community',
+            
+            
+            'create-report',
+            'read-report',
+            'handle-report',
+            
+            
+            'moderate-content',
+            'ban-user',
+            
+            
+            'manage-roles',
+            'manage-permissions'
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create($permission);
+            Permission::firstOrCreate(['name' => $permission]);
         }
 
         
-        $adminRole = Role::where('name', 'Admin')->first();
-        $moderatorRole = Role::where('name', 'Moderator')->first();
+        $adminRole = Role::where('role_name', 'admin')->first();
+        $userRole = Role::where('role_name', 'user')->first();
+        $moderatorRole = Role::where('role_name', 'moderator')->first();
 
-        $adminRole->permissions()->attach(Permission::all());
-        $moderatorRole->permissions()->attach(Permission::whereIn(
-            'name',
-            [
-                 'manage_posts',
-                 'manage_comments',
-                 'manage_reports'
-                ])->get()
-            );
+        
+        $adminRole->permissions()->sync(Permission::all());
+
+
+        $userPermissions = [
+            'read-user',
+            'create-post',
+            'read-post',
+            'update-post', 
+            'delete-post', 
+            'create-comment',
+            'read-comment',
+            'update-comment', 
+            'delete-comment', 
+            'read-community',
+            'create-report',
+            'read-report', 
+        ];
+
+        $userRole->permissions()->sync(
+            Permission::whereIn('name', $userPermissions)->get()
+        );
+
+        
+        $moderatorPermissions = [
+            'read-user',
+            'create-post',
+            'read-post',
+            'update-post',
+            'delete-post',
+            'create-comment',
+            'read-comment',
+            'update-comment',
+            'delete-comment',
+            'read-community',
+            'update-community',
+            'create-report',
+            'read-report',
+            'handle-report',
+            'moderate-content',
+            'ban-user',
+        ];
+
+        $moderatorRole->permissions()->sync(
+            Permission::whereIn('name', $moderatorPermissions)->get()
+        );
     }
 }

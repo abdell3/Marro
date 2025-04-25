@@ -4,35 +4,39 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Community extends Model
 {
-    /** @use HasFactory<\Database\Factories\CommunityFactory> */
     use HasFactory;
 
     protected $fillable = [
-        'name',
+        'theme_name',
         'description',
-        'rules',
-        'banner',
-        'icon',
-        'slug',
     ];
 
-    public function users()
+    /**
+     * Get the users that belong to the community.
+     */
+    public function abonnes(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'community_user');
+        return $this->belongsToMany(User::class, 'user_community');
     }
 
-    public function posts()
+    /**
+     * Get the posts for the community.
+     */
+    public function posts(): HasMany
     {
         return $this->hasMany(Post::class);
     }
 
-    public function tags()
+    /**
+     * Get the threads for the community.
+     */
+    public function threads(): HasMany
     {
-        return $this->belongsToMany(Tag::class, 'community_tag');
+        return $this->hasMany(Thread::class);
     }
-
-
 }

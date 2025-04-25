@@ -15,45 +15,20 @@ class CommentSeeder extends Seeder
      */
     public function run(): void
     {
-        $posts = Post::all();
         $users = User::all();
-        
-        foreach ($posts as $post) {
-            
-            $commentCount = rand(0, 10);
-            
-            for ($i = 0; $i < $commentCount; $i++) {
-                $user = $users->random();
-                
-                $comment = Comment::create([
-                    'content' => 'This is a sample comment ' . ($i + 1) . ' on this post. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-                    'user_id' => $user->id,
-                    'post_id' => $post->id,
-                    'upvotes' => rand(0, 50),
-                    'downvotes' => rand(0, 10),
-                    'created_at' => $post->created_at->addHours(rand(1, 24)),
-                ]);
-                
-               
-                if (rand(1, 100) <= 30) {
-                    
-                    $replyCount = rand(1, 3);
-                    
-                    for ($j = 0; $j < $replyCount; $j++) {
-                        $replyUser = $users->random();
-                        
-                        Comment::create([
-                            'content' => 'This is a reply to the comment above. Lorem ipsum dolor sit amet.',
-                            'user_id' => $replyUser->id,
-                            'post_id' => $post->id,
-                            'parent_id' => $comment->id,
-                            'upvotes' => rand(0, 20),
-                            'downvotes' => rand(0, 5),
-                            'created_at' => $comment->created_at->addHours(rand(1, 12)),
-                        ]);
-                    }
-                }
-            }
+        $posts = Post::all();
+
+        // Create 200 comments
+        for ($i = 0; $i < 200; $i++) {
+            $user = $users->random();
+            $post = $posts->random();
+
+            Comment::create([
+                'post_id' => $post->id,
+                'auteur_id' => $user->id,
+                'contenu' => "Ceci est un commentaire sur le post '{$post->titre}'. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus.",
+                'datePublication' => $post->datePublication->addHours(rand(1, 72))
+            ]);
         }
     }
 }

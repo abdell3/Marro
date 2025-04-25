@@ -3,11 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\Community;
-use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class CommunitySeeder extends Seeder
 {
@@ -18,58 +16,61 @@ class CommunitySeeder extends Seeder
     {
         $communities = [
             [
-                'name' => 'Technology',
-                'description' => 'Discuss the latest in technology, gadgets, programming, and more.',
-                'rules' => "1. Be respectful\n2. No spam\n3. Stay on topic",
-                'tags' => ['Technology', 'Science', 'Education'],
+                'theme_name' => 'Technologie',
+                'description' => 'Discussion sur les dernières technologies, gadgets et innovations'
             ],
             [
-                'name' => 'Gaming',
-                'description' => 'A community for gamers to discuss games, share tips, and connect.',
-                'rules' => "1. No spoilers without tags\n2. Be respectful\n3. No piracy",
-                'tags' => ['Gaming', 'Entertainment'],
+                'theme_name' => 'Gaming',
+                'description' => 'Tout ce qui concerne les jeux vidéo, les consoles et le gaming en général'
             ],
             [
-                'name' => 'Sports',
-                'description' => 'Discuss sports, teams, players, and events from around the world.',
-                'rules' => "1. No personal attacks\n2. Stay on topic\n3. No spam",
-                'tags' => ['Sports', 'Fitness', 'Health'],
+                'theme_name' => 'Science',
+                'description' => 'Partage de découvertes scientifiques et discussions sur tous les domaines scientifiques'
             ],
             [
-                'name' => 'Food',
-                'description' => 'Share recipes, cooking tips, restaurant recommendations, and more.',
-                'rules' => "1. Be respectful\n2. No spam\n3. Credit sources for recipes",
-                'tags' => ['Food', 'Health'],
+                'theme_name' => 'Art',
+                'description' => 'Partage et discussion autour de l\'art sous toutes ses formes'
             ],
             [
-                'name' => 'Travel',
-                'description' => 'Share travel experiences, tips, and recommendations.',
-                'rules' => "1. Be respectful\n2. No spam\n3. Include location information when possible",
-                'tags' => ['Travel', 'Photography'],
+                'theme_name' => 'Musique',
+                'description' => 'Discussions sur la musique, les artistes et les nouveautés'
             ],
+            [
+                'theme_name' => 'Cinéma',
+                'description' => 'Discussions sur les films, séries et l\'industrie cinématographique'
+            ],
+            [
+                'theme_name' => 'Littérature',
+                'description' => 'Partage et discussions autour des livres et de la littérature'
+            ],
+            [
+                'theme_name' => 'Sport',
+                'description' => 'Discussions sur tous les sports et événements sportifs'
+            ],
+            [
+                'theme_name' => 'Cuisine',
+                'description' => 'Partage de recettes et discussions culinaires'
+            ],
+            [
+                'theme_name' => 'Voyage',
+                'description' => 'Partage d\'expériences et conseils de voyage'
+            ]
         ];
 
-        $users = User::all();
+        foreach ($communities as $community) {
+            Community::create($community);
+        }
 
-        foreach ($communities as $communityData) {
-            $tags = $communityData['tags'];
-            
-            unset($communityData['tags']);
-            
-            $community = Community::create([
-                'name' => $communityData['name'],
-                'slug' => Str::slug($communityData['name']),
-                'description' => $communityData['description'],
-                'rules' => $communityData['rules'],
-            ]);
-            
-            
-            $tagIds = Tag::whereIn('name', $tags)->pluck('id');
-            $community->tags()->attach($tagIds);
-            
-            
-            $randomUsers = $users->random(rand(5, 10));
-            $community->users()->attach($randomUsers);
+        // Subscribe users to communities
+        $users = User::all();
+        $communities = Community::all();
+
+        foreach ($users as $user) {
+            // Subscribe each user to 3-5 random communities
+            $randomCommunities = $communities->random(rand(3, 5));
+            foreach ($randomCommunities as $community) {
+                $user->communities()->syncWithoutDetaching([$community->id]);
+            }
         }
     }
 }

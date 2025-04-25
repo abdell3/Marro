@@ -2,8 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Community;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -16,16 +14,11 @@ class CommunityFactory extends Factory
      *
      * @return array<string, mixed>
      */
-
-    // protected $model = Community::class;
-
     public function definition(): array
     {
         return [
-            // 'name' => $this->faker->unique()->word, 
-            // 'slug' => $this->faker->unique()->slug, 
-            // 'description' => $this->faker->paragraph, 
-            // 'user_id' => User::factory(),
+            'theme_name' => fake()->unique()->word(),
+            'description' => fake()->sentence(rand(10, 20)),
         ];
     }
 }

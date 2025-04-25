@@ -2,120 +2,133 @@
 
 namespace App\Services;
 
-use App\Repositories\CommunityRepository;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
+use App\Models\Community;
+use App\Repositories\Interfaces\CommunityRepositoryInterface;
+use App\Services\Interfaces\CommunityServiceInterface;
+use Illuminate\Support\Collection;
 
-
-class CommunityService
+class CommunityService implements CommunityServiceInterface
 {
     /**
-     * Create a new class instance.
+     * @var CommunityRepositoryInterface
      */
+    protected $communityRepository;
 
-
-     protected $communityRepository;
-
-    public function __construct(CommunityRepository $communityRepository)
+    /**
+     * CommunityService constructor.
+     * @param CommunityRepositoryInterface $communityRepository
+     */
+    public function __construct(CommunityRepositoryInterface $communityRepository)
     {
         $this->communityRepository = $communityRepository;
     }
 
-    public function getAllCommunities($perPage)
+    /**
+     * Get all communities
+     * @return Collection
+     */
+    public function getAllCommunities(): Collection
     {
-        return $this->communityRepository->paginate($perPage);
+        return collect($this->communityRepository->all());
     }
 
-    public function getCommunityById($id)
+    /**
+     * Get community by ID
+     * @param int $id
+     * @return Community
+     */
+    public function getCommunityById(int $id): Community
     {
         return $this->communityRepository->find($id);
     }
 
-    public function getCommunityBySlug($slug)
+    /**
+     * Create new community
+     * @param array $data
+     * @return Community
+     */
+    public function createCommunity(array $data): Community
     {
-        return $this->communityRepository->findBySlug($slug);
+        return $this->communityRepository->create($data);
     }
 
-    public function getPopularCommunities()
+    /**
+     * Update community
+     * @param int $id
+     * @param array $data
+     * @return Community
+     */
+    public function updateCommunity(int $id, array $data): Community
     {
-        return $this->communityRepository->findPopular();
-    }
-
-    public function searchCommunities($query)
-    {
-        return $this->communityRepository->search($query);
-    }
-
-    public function createCommunity(array $data)
-    {
-        $data['slug'] = Str::slug($data['name']);
-        $community = $this->communityRepository->create($data);
-        
-        
-        $community->users()->attach(Auth::id());
-        
-        return $community;
-    }
-
-    public function updateCommunity($id, array $data)
-    {
-        if (isset($data['name'])) {
-            $data['slug'] = Str::slug($data['name']);
-        }
         return $this->communityRepository->update($id, $data);
     }
 
-    public function deleteCommunity($id)
+    /**
+     * Delete community
+     * @param int $id
+     * @return bool
+     */
+    public function deleteCommunity(int $id): bool
     {
         return $this->communityRepository->delete($id);
     }
 
-    public function joinCommunity($communityId, $userId)
+    /**
+     * Get community by theme name
+     * @param string $themeName
+     * @return Community|null
+     */
+    public function getCommunityByThemeName(string $themeName): ?Community
     {
-        $community = $this->communityRepository->find($communityId);
-        $community->users()->attach($userId);
-        return $community;
+        return $this->communityRepository->findByThemeName($themeName);
     }
 
-    public function leaveCommunity($communityId, $userId)
+    /**
+     * Get subscribers of community
+     * @param int $communityId
+     * @return Collection
+     */
+    public function getCommunitySubscribers(int $communityId): Collection
     {
-        $community = $this->communityRepository->find($communityId);
-        $community->users()->detach($userId);
-        return $community;
+        return collect($this->communityRepository->getSubscribers($communityId));
     }
 
+    /**
+     * Get posts from community
+     * @param int $communityId
+     * @return Collection
+     */
+    public function getCommunityPosts(int $communityId): Collection
+    {
+        return collect($this->communityRepository->getPosts($communityId));
+    }
 
-    // public function oldServiceLogique()
-    // {
-    //     protected $communityRepository;
-    
-    //     __construct(CommunityRepository $communityRepository)
+    /**
+     * Get threads from community
+     * @param int $communityId
+     * @return Collection
+     */
+    public function getCommunityThreads(int $communityId): Collection
+    {
+        return collect($this->communityRepository->getThreads($communityId));
+    }
+
+    /**
+     * Get popular communities
+     * @param int $limit
+     * @return Collection
+     */
+    public function getPopularCommunities(int $limit = 10): Collection
+    {
+        // Get all communities
+        $communities = $this->getAllCommunities();
         
-    //         $this->communityRepository = $communityRepository;
+        // Sort by number of subscribers
+        $sortedCommunities = $communities->sortByDesc(function ($community) {
+            return $community->abonnes->count();
+        });
         
-    
-    //     getAllCommunities()
-        
-    //         return $this->communityRepository->all();
-        
-    
-    //     getCommunityById($id)
-        
-    //         return $this->communityRepository->find($id);
-            
-    //     createCommunity(array $data)
-        
-    //         return $this->communityRepository->create($data);
-        
-    
-    //     updateCommunity($id, array $data)
-        
-    //         return $this->communityRepository->update($id, $data);
-        
-    
-    //     deleteCommunity($id)
-        
-    //         return $this->communityRepository->delete($id);
-        
-    // }
+        // Limit results
+        return $sortedCommunities->take($limit);
+    }
 }

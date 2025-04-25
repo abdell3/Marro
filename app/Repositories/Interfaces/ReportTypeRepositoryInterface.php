@@ -2,7 +2,12 @@
 
 namespace App\Repositories\Interfaces;
 
-interface ReportTypeRepositoryInterface extends RepositoryInterface
+interface ReportTypeRepositoryInterface extends BaseRepositoryInterface
 {
-    public function findByName($name);
+    /**
+     * Find report type by name
+     * @param string $type
+     * @return mixed
+     */
+    public function findByType(string $type);
 }

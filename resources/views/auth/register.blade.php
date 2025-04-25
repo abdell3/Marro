@@ -1,80 +1,66 @@
-<x-guest-layout>
-    <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
-        <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
-            <div class="mb-6 text-center">
-                <h1 class="text-3xl font-bold text-orange-500">Create Account</h1>
-                <p class="text-gray-500 mt-2">Join our community today</p>
-            </div>
+<x-layout.app title="Inscription">
+    <div class="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden mt-10">
+        <div class="py-4 px-6">
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Inscription</h2>
+            
+            @if ($errors->any())
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                    <ul class="list-disc list-inside">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
             
             <form method="POST" action="{{ route('register') }}">
                 @csrf
                 
-                <!-- Name -->
                 <div class="mb-4">
-                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                    <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
-                    @error('name')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
+                    <label for="nom" class="block text-gray-700 text-sm font-medium mb-2">Nom</label>
+                    <input id="nom" type="text" name="nom" value="{{ old('nom') }}" required autofocus
+                        class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-red-500">
                 </div>
                 
-                <!-- Username -->
                 <div class="mb-4">
-                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                    <input id="username" type="text" name="username" value="{{ old('username') }}" required 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
-                    @error('username')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
+                    <label for="prenom" class="block text-gray-700 text-sm font-medium mb-2">Prénom</label>
+                    <input id="prenom" type="text" name="prenom" value="{{ old('prenom') }}" required
+                        class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-red-500">
                 </div>
                 
-                <!-- Email Address -->
                 <div class="mb-4">
-                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input id="email" type="email" name="email" value="{{ old('email') }}" required 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
-                    @error('email')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
+                    <label for="email" class="block text-gray-700 text-sm font-medium mb-2">Adresse email</label>
+                    <input id="email" type="email" name="email" value="{{ old('email') }}" required
+                        class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-red-500">
                 </div>
                 
-                <!-- Password -->
                 <div class="mb-4">
-                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <input id="password" type="password" name="password" required 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
-                    @error('password')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
+                    <label for="password" class="block text-gray-700 text-sm font-medium mb-2">Mot de passe</label>
+                    <input id="password" type="password" name="password" required
+                        class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-red-500">
                 </div>
                 
-                <!-- Confirm Password -->
-                <div class="mb-4">
-                    <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-                    <input id="password_confirmation" type="password" name="password_confirmation" required 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                <div class="mb-6">
+                    <label for="password_confirmation" class="block text-gray-700 text-sm font-medium mb-2">Confirmation du mot de passe</label>
+                    <input id="password_confirmation" type="password" name="password_confirmation" required
+                        class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-red-500">
                 </div>
                 
-                <!-- Terms and Conditions -->
-                <div class="mb-4 flex items-start">
-                    <input id="terms" type="checkbox" name="terms" required 
-                        class="rounded border-gray-300 text-orange-500 shadow-sm focus:border-orange-300 focus:ring focus:ring-orange-200 focus:ring-opacity-50 mt-1">
-                    <label for="terms" class="ml-2 text-sm text-gray-600">
-                        I agree to the <a href="#" class="text-orange-500 hover:text-orange-700">Terms of Service</a> and <a href="#" class="text-orange-500 hover:text-orange-700">Privacy Policy</a>
-                    </label>
-                </div>
-                
-                <div class="flex items-center justify-end mt-6">
-                    <a class="text-sm text-orange-500 hover:text-orange-700 mr-4" href="{{ route('login') }}">
-                        Already registered?
-                    </a>
-                    
-                    <button type="submit" class="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">
-                        Register
+                <div class="flex items-center justify-center">
+                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 w-full">
+                        S'inscrire
                     </button>
                 </div>
             </form>
+            
+            <div class="mt-6 text-center">
+                <p class="text-sm text-gray-600">
+                    Vous avez déjà un compte?
+                    <a href="{{ route('login') }}" class="text-red-600 hover:underline font-medium">
+                        Se connecter
+                    </a>
+                </p>
+            </div>
         </div>
     </div>
-</x-guest-layout>
+</x-layout.app>

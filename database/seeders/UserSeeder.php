@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -15,42 +14,49 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        
-        $admin = User::create([
-            'name' => 'Abdellah Abdo',
-            'username' => 'Abdo',
-            'email' => 'abdo.abdell.2000@gmail.com',
-            'password' => Hash::make('Abdo147852369'),
-            'email_verified_at' => now(),
+        // Create admin user
+        User::firstOrCreate(
+            ['email' => 'admin@mareddit.com'],
+            [
+                'nom' => 'Admin',
+                'prenom' => 'System',
+                'password' => bcrypt('password'),
+                'role_id' => 1,
+                'badge_id' => 1,
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // Create moderator user
+        User::firstOrCreate(
+            ['email' => 'mod@mareddit.com'],
+            [
+                'nom' => 'Moderator',
+                'prenom' => 'Test',
+                'password' => Hash::make('password'),
+                'role_id' => 3, // Moderator role
+                'badge_id' => 1, // Nouveau venu badge
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // Create regular user
+        User::firstOrCreate(
+            ['email' => 'user@mareddit.com'],
+            [
+                'nom' => 'User',
+                'prenom' => 'Test',
+                'password' => Hash::make('password'),
+                'role_id' => 2, // User role
+                'badge_id' => 1, // Nouveau venu badge
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // Create more users with factory
+        User::factory()->count(20)->create([
+            'role_id' => 2, // User role
+            'badge_id' => 1, // Nouveau venu badge
         ]);
-
-        
-        $moderator = User::create([
-            'name' => 'Yassin Akho',
-            'username' => 'Yc',
-            'email' => 'yassin.akho@gmail.com',
-            'password' => Hash::make('0000****0000'),
-            'email_verified_at' => now(),
-        ]);
-
-        
-        $user = User::create([
-            'name' => 'Test Testo',
-            'username' => 'Testoo',
-            'email' => 'mm3816691@gmail.com',
-            'password' => Hash::make('Password15963'),
-            'email_verified_at' => now(),
-        ]);
-
-        
-        $admin->roles()->attach(Role::where('name', 'Admin')->first());
-        $moderator->roles()->attach(Role::where('name', 'Moderator')->first());
-        $user->roles()->attach(Role::where('name', 'User')->first());
-
-        
-        User::factory(10)->create()->each(function ($user) {
-            $user->roles()->attach(Role::where('name', 'User')->first());
-        });
-
     }
 }

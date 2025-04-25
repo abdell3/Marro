@@ -8,40 +8,55 @@ use App\Repositories\Interfaces\ReportRepositoryInterface;
 class ReportRepository extends BaseRepository implements ReportRepositoryInterface
 {
     /**
-     * Create a new class instance.
+     * ReportRepository constructor.
+     * @param Report $model
      */
     public function __construct(Report $model)
     {
         parent::__construct($model);
     }
 
-    public function findByUser($userId)
+    /**
+     * Get reports by user
+     * @param int $userId
+     * @return mixed
+     */
+    public function getByUser(int $userId)
     {
-        return $this->model->where('user_id', $userId)
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+        return $this->model->where('utilisateur_id', $userId)->get();
     }
 
-    public function findByStatus($status)
+    /**
+     * Get reports by type
+     * @param int $typeId
+     * @return mixed
+     */
+    public function getByType(int $typeId)
     {
-        return $this->model->where('status', $status)
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+        return $this->model->where('type_report_id', $typeId)->get();
     }
 
-    public function findByReportType($reportTypeId)
+    /**
+     * Get reports for a post
+     * @param int $postId
+     * @return mixed
+     */
+    public function getForPost(int $postId)
     {
-        return $this->model->where('report_type_id', $reportTypeId)
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
-    }
-
-    public function findByReportable($reportableType, $reportableId)
-    {
-        return $this->model->where('reportable_type', $reportableType)
-            ->where('reportable_id', $reportableId)
-            ->orderBy('created_at', 'desc')
+        return $this->model->where('reportable_type', 'App\\Models\\Post')
+            ->where('reportable_id', $postId)
             ->get();
     }
 
+    /**
+     * Get reports for a comment
+     * @param int $commentId
+     * @return mixed
+     */
+    public function getForComment(int $commentId)
+    {
+        return $this->model->where('reportable_type', 'App\\Models\\Comment')
+            ->where('reportable_id', $commentId)
+            ->get();
+    }
 }

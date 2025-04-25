@@ -1,185 +1,97 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\BadgeController;
-use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\CommentController;
-use App\Http\Controllers\PermissionController;
-use App\Http\Controllers\PollController;
+use App\Http\Controllers\CommunityController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ModerationController;
 use App\Http\Controllers\PostController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\ReportTypeController;
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\SavedPostController;
-use App\Http\Controllers\TagController;
-use App\Http\Controllers\ThreadController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "web" middleware group. Make something great!
+|
+*/
+
+// Home routes
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/home', [HomeController::class, 'index']);
+Route::get('/search', [HomeController::class, 'search'])->name('search');
+
+// Auth routes
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
+    Route::post('/forgot-password', [AuthController::class, 'sendPasswordResetLink'])->name('password.email');
+    Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])->name('password.reset');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 });
 
-Route::get('/register', [AuthController::class, 'registerForm'])->name('register');
-Route::post('/register', [AuthController::class, 'register']);
-Route::get('/login', [AuthController::class, 'loginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-
-
-Route::middleware(['auth'])->group(function () {
-
-    // Route::get('/dashboard', function () {
-    //             return view('auth.dashboard');
-    //         })->name('auth.dashboard');
-
-    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
-    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::get('/profile/password', [ProfileController::class, 'editPassword'])->name('profile.password');
-    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
-    Route::get('/profile/delete', [ProfileController::class, 'confirmDelete'])->name('profile.delete');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+Route::middleware('auth')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    
+    // User routes
+    Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
+    Route::get('/profile', [UserController::class, 'profile'])->name('profile');
+    Route::get('/profile/edit', [UserController::class, 'editProfile'])->name('profile.edit');
+    Route::put('/profile', [UserController::class, 'updateProfile']);
+    Route::get('/settings', [UserController::class, 'settings'])->name('settings');
+    Route::put('/settings/notifications', [UserController::class, 'updateNotificationSettings'])->name('settings.update-notifications');
+    Route::put('/settings/privacy', [UserController::class, 'updatePrivacySettings'])->name('settings.update-privacy');
+    Route::put('/profile/avatar', [UserController::class, 'updateAvatar'])->name('profile.update-avatar');
+    Route::delete('/account', [UserController::class, 'deleteAccount'])->name('account.delete');
+    Route::get('/change-password', [UserController::class, 'showChangePasswordForm'])->name('password.change');
+    Route::put('/change-password', [UserController::class, 'changePassword']);
+    Route::get('/saved-posts', [UserController::class, 'savedPosts'])->name('saved-posts');
+    Route::get('/communities', [UserController::class, 'communities'])->name('user.communities');
+    
+    // Email verification
+    Route::get('/verify-email/{token}', [AuthController::class, 'verifyEmail'])->name('verification.verify');
+    
+    // Post routes
+    Route::resource('posts', PostController::class);
+    Route::post('/posts/{post}/vote', [PostController::class, 'vote'])->name('posts.vote');
+    Route::post('/posts/{post}/save', [PostController::class, 'save'])->name('posts.save');
+    Route::post('/posts/{post}/report', [PostController::class, 'report'])->name('posts.report');
+    
+    // Comment routes
+    Route::resource('comments', CommentController::class)->except(['index', 'create', 'show']);
+    Route::post('/comments/{comment}/report', [CommentController::class, 'report'])->name('comments.report');
+    Route::get('/comments/{comment}/reply', [CommentController::class, 'reply'])->name('comments.reply');
+    Route::post('/comments/{comment}/reply', [CommentController::class, 'storeReply'])->name('comments.storeReply');
+    
+    // Community routes
+    Route::resource('communities', CommunityController::class);
+    Route::post('/communities/{community}/subscribe', [CommunityController::class, 'toggleSubscription'])->name('communities.subscribe');
+    
+    // Moderation routes (moderator or admin only)
+    Route::middleware('role:moderator|admin')->group(function () {
+        Route::get('/moderation', [ModerationController::class, 'index'])->name('moderation');
+        Route::get('/moderation/reports/{report}', [ModerationController::class, 'show'])->name('moderation.reports.show');
+        Route::post('/moderation/reports/{report}/handle', [ModerationController::class, 'handleReport'])->name('moderation.reports.handle');
+        Route::get('/moderation/reported-posts', [ModerationController::class, 'reportedPosts'])->name('moderation.reported-posts');
+        Route::get('/moderation/reported-comments', [ModerationController::class, 'reportedComments'])->name('moderation.reported-comments');
     });
-
-
-
-Route::resource('communities', CommunityController::class);
-Route::post('/communities/{community}/join', [CommunityController::class, 'join'])->name('communities.join');
-Route::post('/communities/{community}/leave', [CommunityController::class, 'leave'])->name('communities.leave');
-
-
-Route::resource('posts', PostController::class);
-Route::post('/posts/{post}/upvote', [PostController::class, 'upvote'])->name('posts.upvote');
-Route::post('/posts/{post}/downvote', [PostController::class, 'downvote'])->name('posts.downvote');
-
-
-Route::resource('comments', CommentController::class)->except(['index', 'show']);
-Route::post('/comments/{comment}/upvote', [CommentController::class, 'upvote'])->name('comments.upvote');
-Route::post('/comments/{comment}/downvote', [CommentController::class, 'downvote'])->name('comments.downvote');
-
-
-Route::resource('threads', ThreadController::class);
-
-
-Route::post('/polls', [PollController::class, 'store'])->name('polls.store');
-Route::get('/polls/{poll}', [PollController::class, 'show'])->name('polls.show');
-Route::post('/polls/{poll}/vote', [PollController::class, 'vote'])->name('polls.vote');
-Route::get('/polls/{poll}/results', [PollController::class, 'results'])->name('polls.results');
-
-
-Route::get('/saved-posts', [SavedPostController::class, 'index'])->name('saved-posts.index');
-Route::post('/saved-posts', [SavedPostController::class, 'store'])->name('saved-posts.store');
-Route::delete('/saved-posts/{post}', [SavedPostController::class, 'destroy'])->name('saved-posts.destroy');
-
-
-Route::resource('tags', TagController::class);
-
-
-Route::get('/reports/create', [ReportController::class, 'create'])->name('reports.create');
-Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
-
-
-Route::get('/badges', [BadgeController::class, 'index'])->name('badges.index');
-Route::get('/badges/{badge}', [BadgeController::class, 'show'])->name('badges.show');
-
-
-Route::middleware(['auth', 'can:admin'])->prefix('admin')->name('admin.')->group(function () {
     
-    Route::resource('roles', RoleController::class);
-    
-    
-    Route::resource('permissions', PermissionController::class);
-    
-    
-    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
-    Route::get('/reports/{report}', [ReportController::class, 'show'])->name('reports.show');
-    Route::put('/reports/{report}', [ReportController::class, 'update'])->name('reports.update');
-    Route::patch('/reports/{report}/status', [ReportController::class, 'updateStatus'])->name('reports.update-status');
-    Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->name('reports.destroy');
-    
-    
-    Route::resource('report-types', ReportTypeController::class);
-    
-    
-    Route::resource('badges', BadgeController::class)->except(['index', 'show']);
-    Route::post('/badges/award', [BadgeController::class, 'awardBadge'])->name('badges.award');
-    Route::post('/badges/revoke', [BadgeController::class, 'revokeBadge'])->name('badges.revoke');
+    // Admin routes (admin only)
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
+        Route::get('/admin/users', [AdminController::class, 'users'])->name('admin.users');
+        Route::put('/admin/users/{user}/role', [AdminController::class, 'updateUserRole'])->name('admin.users.update-role');
+        Route::delete('/admin/users/{user}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
+        Route::post('/admin/users/{user}/ban', [AdminController::class, 'banUser'])->name('admin.users.ban');
+        Route::get('/admin/roles', [AdminController::class, 'roles'])->name('admin.roles');
+        Route::put('/admin/roles/{role}/permissions', [AdminController::class, 'updateRolePermissions'])->name('admin.roles.update-permissions');
+    });
 });
-
-
-
-
-// use App\Http\Controllers\Admin\CommentController;
-// use App\Http\Controllers\Admin\DashboardController;
-// // use App\Http\Controllers\Admin\PostController;
-// use App\Http\Controllers\Admin\UserController;
-// use App\Http\Controllers\AuthController;
-// use App\Http\Controllers\CommunityController;
-// use App\Http\Controllers\HomeController;
-// use App\Http\Controllers\PostController;
-// use App\Http\Controllers\ReportController;
-// use App\Http\Controllers\TagController;
-// use App\Http\Controllers\ThreadController;
-// use Illuminate\Support\Facades\Route;
-
-// Route::get('/', function () {
-//     return view('welcome');
-// });
-
-
-// Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
-
-// Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
-
-
-
-//     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-
-//     Route::resource('tags', TagController::class);
-    
-//     Route::resource('users', UserController::class);    
-
-
-
-
-//     Route::get('/', [HomeController::class, 'index'])->name('home');
-
-
-
-// Route::middleware('auth')->group(function () {
-//     Route::get('/dashboard', function () {
-//         return view('auth.dashboard');
-//     })->name('auth.dashboard');
-
-//     Route::resource('communities', CommunityController::class);
-//     Route::resource('threads', ThreadController::class);
-    
-    
-//     Route::middleware(['auth', 'permission:view-posts'])->group(function () {
-//         Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
-//         Route::get('/posts/create', [PostController::class, 'create'])->middleware('permission:create-posts')->name('posts.create');
-//         Route::post('/posts', [PostController::class, 'store'])->middleware('permission:create-posts')->name('posts.store');
-//         Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
-//         Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->middleware('permission:edit-posts')->name('posts.edit');
-//         Route::put('/posts/{post}', [PostController::class, 'update'])->middleware('permission:edit-posts')->name('posts.update');
-//         Route::delete('/posts/{post}', [PostController::class, 'destroy'])->middleware('permission:delete-posts')->name('posts.destroy');
-//     });
-
-//     Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
-//     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
-
-
-//     });
-
-
-// Route::middleware(['auth'])->group(function () {
-//     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-//     Route::get('/communities', [UserController::class, 'communities'])->name('users.communities');
-//     Route::get('/reported', [ReportController::class, 'reported'])->name('reported');
-// });
-// ;
-
-

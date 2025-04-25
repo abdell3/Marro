@@ -4,33 +4,32 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Thread extends Model
 {
-    /** @use HasFactory<\Database\Factories\ThreadFactory> */
     use HasFactory;
 
     protected $fillable = [
         'title',
-        'description',
+        'content',
+        'user_id',
         'community_id',
     ];
 
-
-    public function user()
+    /**
+     * Get the user that owns the thread.
+     */
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function community()
+    /**
+     * Get the community that owns the thread.
+     */
+    public function community(): BelongsTo
     {
         return $this->belongsTo(Community::class);
     }
-
-    public function posts()
-    {
-        return $this->hasMany(Post::class);
-    }
-
-    
 }

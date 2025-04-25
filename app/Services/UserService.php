@@ -3,124 +3,247 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Repositories\Interfaces\SavePostRepositoryInterface;
+use App\Repositories\Interfaces\UserRepositoryInterface;
+use App\Services\Interfaces\UserServiceInterface;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 
-class UserService
+class UserService implements UserServiceInterface
 {
     /**
-     * Create a new class instance.
+     * @var UserRepositoryInterface
      */
-    public function getAllUsers()
-    {
-        return User::with('roles')->paginate(15);
+    protected $userRepository;
+
+    /**
+     * @var SavePostRepositoryInterface
+     */
+    protected $savePostRepository;
+
+    /**
+     * UserService constructor.
+     * @param UserRepositoryInterface $userRepository
+     * @param SavePostRepositoryInterface $savePostRepository
+     */
+    public function __construct(
+        UserRepositoryInterface $userRepository,
+        SavePostRepositoryInterface $savePostRepository
+    ) {
+        $this->userRepository = $userRepository;
+        $this->savePostRepository = $savePostRepository;
     }
 
-    public function getUserById($id)
+    /**
+     * Get all users
+     * @return Collection
+     */
+    public function getAllUsers(): Collection
     {
-        return User::with([
-                'roles', 
-                'badges', 
-                'posts', 
-                'comments', 
-                'communities'
-            ])->findOrFail($id);
+        return collect($this->userRepository->all());
     }
 
-
-    public function getUsersWithRole($roleName)
+    /**
+     * Get user by ID
+     * @param int $id
+     * @return User
+     */
+    public function getUserById(int $id): User
     {
-        return User::whereHas('roles', function($query) use ($roleName) {
-            $query->where('name', $roleName);
-        })->get();
+        return $this->userRepository->find($id);
     }
 
-
-    public function getUsersWithBadge($badgeId)
+    /**
+     * Create new user
+     * @param array $data
+     * @return User
+     */
+    public function createUser(array $data): User
     {
-        return User::whereHas('badges', function($query) use ($badgeId) {
-            $query->where('badge_id', $badgeId);
-        })->get();
-    }
-
-
-    public function createUser(array $data)
-    {
+        // Hash password if provided
         if (isset($data['password'])) {
             $data['password'] = Hash::make($data['password']);
         }
-        
-        return User::create($data);
+
+        return $this->userRepository->create($data);
     }
 
-    public function updateUser($id, array $data)
+    /**
+     * Update user
+     * @param int $id
+     * @param array $data
+     * @return User
+     */
+    public function updateUser(int $id, array $data): User
     {
-        $user = User::findOrFail($id);
-        
-        if (isset($data['password']) && !empty($data['password'])) {
+        // Hash password if provided
+        if (isset($data['password'])) {
             $data['password'] = Hash::make($data['password']);
-        } else {
-            unset($data['password']);
         }
-        
-        if (isset($data['avatar']) && $data['avatar'] instanceof \Illuminate\Http\UploadedFile) {
-            if ($user->avatar) {
-                Storage::disk('public')->delete($user->avatar);
-            }
-            
-            $data['avatar'] = $data['avatar']->store('avatars', 'public');
+
+        return $this->userRepository->update($id, $data);
+    }
+
+    /**
+     * Delete user
+     * @param int $id
+     * @return bool
+     */
+    public function deleteUser(int $id): bool
+    {
+        return $this->userRepository->delete($id);
+    }
+
+    /**
+     * Get user by email
+     * @param string $email
+     * @return User|null
+     */
+    public function getUserByEmail(string $email): ?User
+    {
+        return $this->userRepository->findByEmail($email);
+    }
+
+    /**
+     * Register new user
+     * @param array $data
+     * @return User
+     */
+    public function registerUser(array $data): User
+    {
+        // Assign default role (regular user)
+        if (!isset($data['role_id'])) {
+            $data['role_id'] = 2; // Assuming 2 is the ID for regular users
         }
-        
-        $user->update($data);
-        
-        return $user;
+
+        // Set token for email verification
+        $data['token'] = bin2hex(random_bytes(32));
+
+        return $this->createUser($data);
     }
 
-    public function deleteUser($id)
+    /**
+     * Login user
+     * @param string $email
+     * @param string $password
+     * @return array
+     */
+    public function loginUser(string $email, string $password): array
     {
-        $user = User::findOrFail($id);
-        
-        if ($user->avatar) {
-            Storage::disk('public')->delete($user->avatar);
+        $user = $this->getUserByEmail($email);
+
+        if (!$user || !Hash::check($password, $user->password)) {
+            return [
+                'success' => false,
+                'message' => 'Invalid credentials',
+                'user' => null
+            ];
         }
-        
-        return $user->delete();
+
+        return [
+            'success' => true,
+            'message' => 'Login successful',
+            'user' => $user
+        ];
     }
 
-    public function assignRole($userId, $roleId)
+    /**
+     * Logout user
+     * @param int $id
+     * @return bool
+     */
+    public function logoutUser(int $id): bool
     {
-        $user = User::findOrFail($userId);
-        $user->roles()->syncWithoutDetaching([$roleId]);
-        return $user;
+        // In a custom auth implementation, we might need to invalidate tokens or sessions
+        // For simplicity, this method returns true
+        return true;
     }
 
-    public function removeRole($userId, $roleId)
+    /**
+     * Subscribe user to community
+     * @param int $userId
+     * @param int $communityId
+     * @return bool
+     */
+    public function subscribeToCommunity(int $userId, int $communityId): bool
     {
-        $user = User::findOrFail($userId);
-        $user->roles()->detach($roleId);
-        return $user;
+        $this->userRepository->addCommunity($userId, $communityId);
+        return true;
     }
 
-    public function syncRoles($userId, array $roleIds)
+    /**
+     * Unsubscribe user from community
+     * @param int $userId
+     * @param int $communityId
+     * @return bool
+     */
+    public function unsubscribeFromCommunity(int $userId, int $communityId): bool
     {
-        $user = User::findOrFail($userId);
-        $user->roles()->sync($roleIds);
-        return $user;
+        $this->userRepository->removeCommunity($userId, $communityId);
+        return true;
     }
 
-    public function awardBadge($userId, $badgeId)
+    /**
+     * Save post for user
+     * @param int $userId
+     * @param int $postId
+     * @return bool
+     */
+    public function savePost(int $userId, int $postId): bool
     {
-        $user = User::findOrFail($userId);
-        if (!$user->badges()->where('badge_id', $badgeId)->exists()) {
-            $user->badges()->attach($badgeId);
+        // Check if post is already saved
+        if ($this->savePostRepository->isPostSaved($postId, $userId)) {
+            return false;
         }
-        return $user;
+
+        $this->userRepository->savePost($userId, $postId);
+        return true;
     }
 
-    public function revokeBadge($userId, $badgeId)
+    /**
+     * Unsave post for user
+     * @param int $userId
+     * @param int $postId
+     * @return bool
+     */
+    public function unsavePost(int $userId, int $postId): bool
     {
-        $user = User::findOrFail($userId);
-        $user->badges()->detach($badgeId);
-        return $user;
+        $this->userRepository->unsavePost($userId, $postId);
+        return true;
+    }
+
+    /**
+     * Get user's saved posts
+     * @param int $userId
+     * @return Collection
+     */
+    public function getSavedPosts(int $userId): Collection
+    {
+        $user = $this->getUserById($userId);
+        return collect($user->savedPosts);
+    }
+
+    /**
+     * Check if user has permission
+     * @param int $userId
+     * @param string $permission
+     * @return bool
+     */
+    public function hasPermission(int $userId, string $permission): bool
+    {
+        $user = $this->getUserById($userId);
+        return $user->hasPermission($permission);
+    }
+
+    /**
+     * Check if user has role
+     * @param int $userId
+     * @param string $roleName
+     * @return bool
+     */
+    public function hasRole(int $userId, string $roleName): bool
+    {
+        $user = $this->getUserById($userId);
+        return $user->hasRole($roleName);
     }
 }

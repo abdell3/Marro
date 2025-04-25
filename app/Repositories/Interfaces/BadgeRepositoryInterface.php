@@ -2,10 +2,19 @@
 
 namespace App\Repositories\Interfaces;
 
-interface BadgeRepositoryInterface extends RepositoryInterface
+interface BadgeRepositoryInterface extends BaseRepositoryInterface
 {
-    public function findByName($name);
-    public function findWithUsers($id);
-    public function attachToUser($badgeId, $userId);
-    public function detachFromUser($badgeId, $userId);
+    /**
+     * Find badge by name
+     * @param string $name
+     * @return mixed
+     */
+    public function findByName(string $name);
+
+    /**
+     * Get users with badge
+     * @param int $badgeId
+     * @return mixed
+     */
+    public function getUsersWithBadge(int $badgeId);
 }

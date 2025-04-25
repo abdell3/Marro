@@ -2,44 +2,64 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Community;
-use App\Http\Requests\StoreCommunityRequest;
-use App\Http\Requests\UpdateCommunityRequest;
-use App\Services\CommunityService;
+use App\Services\Interfaces\AuthServiceInterface;
+use App\Services\Interfaces\CommunityServiceInterface;
+use App\Services\Interfaces\PostServiceInterface;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class CommunityController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * @var CommunityServiceInterface
      */
-
-
     protected $communityService;
-     
-    public function __construct(CommunityService $communityService)
-    {
+
+    /**
+     * @var PostServiceInterface
+     */
+    protected $postService;
+
+    /**
+     * @var AuthServiceInterface
+     */
+    protected $authService;
+
+    /**
+     * CommunityController constructor.
+     */
+    public function __construct(
+        CommunityServiceInterface $communityService,
+        PostServiceInterface $postService,
+        AuthServiceInterface $authService
+    ) {
         $this->communityService = $communityService;
+        $this->postService = $postService;
+        $this->authService = $authService;
+        
+        // Apply auth middleware for specific actions
         $this->middleware('auth')->except(['index', 'show']);
-    }
-
-
-    public function index(Request $request)
-    {
-        if($request->has('popular')) {
-            $communities = $this->communityService->getPopularCommunities();
-        }elseif($request->has('search')) {
-            $communities = $this->communityService->searchCommunities($request->search);
-        }else{
-            $communities = $this->communityService->getAllCommunities(10);
-        }
-
-        return view('communities.index', compact('communities'));   
+        
+        // Apply permission middleware for admin/mod actions
+        $this->middleware('permission:create-community')->only(['create', 'store']);
+        $this->middleware('permission:update-community')->only(['edit', 'update']);
+        $this->middleware('permission:delete-community')->only(['destroy']);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Display a listing of communities.
+     */
+    public function index()
+    {
+        $communities = $this->communityService->getAllCommunities();
+
+        return view('communities.index', [
+            'communities' => $communities
+        ]);
+    }
+
+    /**
+     * Show the form for creating a new community.
      */
     public function create()
     {
@@ -47,83 +67,127 @@ class CommunityController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created community in storage.
      */
-    public function store(StoreCommunityRequest $request)
+    public function store(Request $request)
     {
-        $community = $this->communityService->createCommunity($request->validated());
-        return redirect()->route('communities.show', $community->slug)->with(
-            'success', 
-            'Community created successfully.'
-        );
+        $validator = Validator::make($request->all(), [
+            'theme_name' => ['required', 'string', 'max:255', 'unique:communities'],
+            'description' => ['required', 'string'],
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $community = $this->communityService->createCommunity([
+            'theme_name' => $request->input('theme_name'),
+            'description' => $request->input('description'),
+        ]);
+
+        // Subscribe the creator to the community
+        $user = $this->authService->user();
+        $user->communities()->attach($community->id);
+
+        return redirect()->route('communities.show', $community->id)
+            ->with('success', 'Communauté créée avec succès.');
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified community.
      */
-    public function show($slug)
+    public function show($id, Request $request)
     {
-        $community = $this->communityService->getCommunityBySlug($slug);
-        return view('communities.show', compact('community'));
+        $community = $this->communityService->getCommunityById($id);
+        $posts = $this->communityService->getCommunityPosts($id);
+        
+        // Sort by latest by default
+        $filter = $request->input('filter', 'latest');
+        
+        if ($filter === 'popular') {
+            $posts = $posts->sortByDesc('like');
+        } else {
+            $posts = $posts->sortByDesc('datePublication');
+        }
+
+        return view('communities.show', [
+            'community' => $community,
+            'posts' => $posts,
+            'filter' => $filter
+        ]);
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Show the form for editing the specified community.
      */
     public function edit($id)
     {
         $community = $this->communityService->getCommunityById($id);
-        $this->authorize('update', $community);
-        return view('communities.edit', compact('community'));
+
+        return view('communities.edit', [
+            'community' => $community
+        ]);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified community in storage.
      */
-    public function update(UpdateCommunityRequest $request, $id)
+    public function update(Request $request, $id)
     {
-        $community = $this->communityService->getCommunityById($id);
-        $this->authorize(
-            'update', 
-            $community
-        );
+        $validator = Validator::make($request->all(), [
+            'theme_name' => ['required', 'string', 'max:255', 'unique:communities,theme_name,'.$id],
+            'description' => ['required', 'string'],
+        ]);
 
-        $this->communityService->updateCommunity(
-            $id, 
-            $request->validated()
-        );
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
 
-        return redirect()->route('communities.show', $community->slug)->with(
-            'success', 
-            'Community updated successfully.'
-        );
+        $community = $this->communityService->updateCommunity($id, [
+            'theme_name' => $request->input('theme_name'),
+            'description' => $request->input('description'),
+        ]);
+
+        return redirect()->route('communities.show', $community->id)
+            ->with('success', 'Communauté mise à jour avec succès.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified community from storage.
      */
     public function destroy($id)
     {
-        $community = $this->communityService->getCommunityById($id);
-        $this->authorize('delete', $community);
         $this->communityService->deleteCommunity($id);
-        return redirect()->route('communities.index')->with('success', 'Community deleted successfully.');
+
+        return redirect()->route('communities.index')
+            ->with('success', 'Communauté supprimée avec succès.');
     }
 
-
-    public function join($id)
+    /**
+     * Subscribe/unsubscribe from a community.
+     */
+    public function toggleSubscription($id)
     {
-        $this->communityService->joinCommunity($id, Auth::id());
-        return back()->with('success', 'Joined community successfully.');
+        $user = $this->authService->user();
+        
+        // Toggle subscription using Eloquent relationship
+        $result = $user->communities()->toggle($id);
+        
+        $isSubscribed = count($result['attached']) > 0;
+        
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'isSubscribed' => $isSubscribed,
+                'message' => $isSubscribed ? 'Abonné avec succès.' : 'Désabonné avec succès.'
+            ]);
+        }
+        
+        return redirect()->back()
+            ->with('success', $isSubscribed ? 'Abonné avec succès.' : 'Désabonné avec succès.');
     }
-
-
-    public function leave($id)
-    {
-        $this->communityService->leaveCommunity($id, Auth::id());
-        return back()->with('success', 'Left community successfully.');
-    }
-
-    
 }
-

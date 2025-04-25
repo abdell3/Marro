@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Tag;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class TagSeeder extends Seeder
 {
@@ -15,33 +14,50 @@ class TagSeeder extends Seeder
     public function run(): void
     {
         $tags = [
-            'Technology',
-            'Science',
-            'Gaming',
-            'Sports',
-            'Politics',
-            'News',
-            'Entertainment',
-            'Art',
-            'Music',
-            'Food',
-            'Travel',
-            'Health',
-            'Fitness',
-            'Fashion',
-            'Education',
-            'Finance',
-            'Business',
-            'Humor',
-            'Pets',
-            'Photography',
+            [
+                'title' => 'Discussion',
+                'description' => 'Posts qui invitent à la discussion'
+            ],
+            [
+                'title' => 'Question',
+                'description' => 'Posts qui posent une question'
+            ],
+            [
+                'title' => 'Aide',
+                'description' => 'Posts demandant de l\'aide'
+            ],
+            [
+                'title' => 'Humour',
+                'description' => 'Posts humoristiques'
+            ],
+            [
+                'title' => 'Information',
+                'description' => 'Posts informatifs'
+            ],
+            [
+                'title' => 'Actualité',
+                'description' => 'Posts sur l\'actualité'
+            ],
+            [
+                'title' => 'Critique',
+                'description' => 'Posts critiques sur un sujet'
+            ],
+            [
+                'title' => 'Opinion',
+                'description' => 'Posts exprimant une opinion'
+            ],
+            [
+                'title' => 'NSFW',
+                'description' => 'Contenu sensible, Non Approprié Au Travail'
+            ],
+            [
+                'title' => 'Spoiler',
+                'description' => 'Contenu révélant des informations sur une œuvre'
+            ]
         ];
 
         foreach ($tags as $tag) {
-            Tag::create([
-                'name' => $tag,
-                'slug' => Str::slug($tag),
-            ]);
+            Tag::create($tag);
         }
     }
 }

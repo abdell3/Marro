@@ -4,64 +4,84 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Post extends Model
 {
-    /** @use HasFactory<\Database\Factories\PostFactory> */
     use HasFactory;
 
     protected $fillable = [
-        'title',
-        'content',
-        'user_id',
+        'titre',
+        'contenu',
+        'typeContenu',
+        'media_path',
+        'media_type',
+        'datePublication',
+        'auteur_id',
         'community_id',
-        'upvotes',
-        'downvotes',
-        'is_pinned',
+        'like',
     ];
 
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }   
+    protected $casts = [
+        'datePublication' => 'datetime',
+    ];
 
-    public function thread()
+    /**
+     * Get the user that owns the post.
+     */
+    public function auteur(): BelongsTo
     {
-        return $this->belongsTo(Thread::class);
+        return $this->belongsTo(User::class, 'auteur_id');
     }
 
-    public function community()
+    /**
+     * Get the community that owns the post.
+     */
+    public function community(): BelongsTo
     {
         return $this->belongsTo(Community::class);
     }
 
-    
-    public function comments()
+    /**
+     * Get the comments for the post.
+     */
+    public function commentaires(): HasMany
     {
         return $this->hasMany(Comment::class);
     }
 
-
-    public function savedBy()
+    /**
+     * Get the polls for the post.
+     */
+    public function polls(): HasMany
     {
-        return $this->hasMany(SavedPost::class);
+        return $this->hasMany(Poll::class);
     }
 
+    /**
+     * Get the users that saved the post.
+     */
+    public function savedBy(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'save_posts');
+    }
 
-    public function reports()
+    /**
+     * Get the tags for the post.
+     */
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class);
+    }
+
+    /**
+     * Get all of the post's reports.
+     */
+    public function reports(): MorphMany
     {
         return $this->morphMany(Report::class, 'reportable');
     }
-
-
-    public function tags()
-    {
-        return $this->belongsToMany(Tag::class, 'post_tag');
-    }
-
-    public function poll()
-    {
-        return $this->hasOne(Poll::class);
-    }
-
 }

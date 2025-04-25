@@ -2,12 +2,19 @@
 
 namespace App\Repositories\Interfaces;
 
-interface TagRepositoryInterface extends RepositoryInterface
+interface TagRepositoryInterface extends BaseRepositoryInterface
 {
     /**
-     * Create a new class instance.
+     * Find tag by title
+     * @param string $title
+     * @return mixed
      */
-    public function findBySlug($slug);
-    public function findByName($name);
-    public function findOrCreateByName($name);
+    public function findByTitle(string $title);
+
+    /**
+     * Get posts for tag
+     * @param int $tagId
+     * @return mixed
+     */
+    public function getPosts(int $tagId);
 }

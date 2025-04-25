@@ -1,68 +1,67 @@
-<x-guest-layout>
-    <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
-        <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
-            <div class="mb-6 text-center">
-                <h1 class="text-3xl font-bold text-orange-500">Welcome Back</h1>
-                <p class="text-gray-500 mt-2">Sign in to your account</p>
-            </div>
+<x-layout.app title="Connexion">
+    <div class="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden mt-10">
+        <div class="py-4 px-6">
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Connexion</h2>
             
-            @if (session('status'))
-                <div class="mb-4 font-medium text-sm text-green-600">
-                    {{ session('status') }}
+            @if ($errors->any())
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                    <ul class="list-disc list-inside">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+            
+            @if (session('success'))
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                    {{ session('success') }}
                 </div>
             @endif
             
             <form method="POST" action="{{ route('login') }}">
                 @csrf
                 
-                <!-- Email Address -->
                 <div class="mb-4">
-                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
-                    @error('email')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
+                    <label for="email" class="block text-gray-700 text-sm font-medium mb-2">Adresse email</label>
+                    <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus
+                        class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-red-500">
                 </div>
                 
-                <!-- Password -->
-                <div class="mb-4">
-                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <input id="password" type="password" name="password" required 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
-                    @error('password')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
+                <div class="mb-6">
+                    <label for="password" class="block text-gray-700 text-sm font-medium mb-2">Mot de passe</label>
+                    <input id="password" type="password" name="password" required
+                        class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-red-500">
                 </div>
                 
-                <!-- Remember Me -->
-                <div class="mb-4 flex items-center">
-                    <input id="remember_me" type="checkbox" name="remember" 
-                        class="rounded border-gray-300 text-orange-500 shadow-sm focus:border-orange-300 focus:ring focus:ring-orange-200 focus:ring-opacity-50">
-                    <label for="remember_me" class="ml-2 text-sm text-gray-600">Remember me</label>
-                </div>
-                
-                <div class="flex items-center justify-between mt-6">
-                    @if (Route::has('password.request'))
-                        <a class="text-sm text-orange-500 hover:text-orange-700" href="{{ route('password.request') }}">
-                            Forgot your password?
-                        </a>
-                    @endif
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center">
+                        <input id="remember" type="checkbox" name="remember" class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
+                        <label for="remember" class="ml-2 block text-sm text-gray-700">
+                            Se souvenir de moi
+                        </label>
+                    </div>
                     
-                    <button type="submit" class="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">
-                        Log in
+                    <a href="{{ route('password.request') }}" class="text-sm text-red-600 hover:underline">
+                        Mot de passe oublié?
+                    </a>
+                </div>
+                
+                <div class="flex items-center justify-center">
+                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 w-full">
+                        Se connecter
                     </button>
                 </div>
             </form>
             
             <div class="mt-6 text-center">
                 <p class="text-sm text-gray-600">
-                    Don't have an account? 
-                    <a href="{{ route('register') }}" class="text-orange-500 hover:text-orange-700">
-                        Sign up
+                    Vous n'avez pas de compte?
+                    <a href="{{ route('register') }}" class="text-red-600 hover:underline font-medium">
+                        S'inscrire
                     </a>
                 </p>
             </div>
         </div>
     </div>
-</x-guest-layout>
+</x-layout.app>

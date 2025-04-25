@@ -3,44 +3,49 @@
 namespace App\Repositories;
 
 use App\Models\Poll;
-use App\Models\PollOption;
 use App\Repositories\Interfaces\PollRepositoryInterface;
-use Illuminate\Support\Facades\DB;
 
 class PollRepository extends BaseRepository implements PollRepositoryInterface
 {
     /**
-     * Create a new class instance.
+     * PollRepository constructor.
+     * @param Poll $model
      */
     public function __construct(Poll $model)
     {
         parent::__construct($model);
     }
 
-    public function findByPost($postId)
+    /**
+     * Get polls by post
+     * @param int $postId
+     * @return mixed
+     */
+    public function getByPost(int $postId)
     {
-        return $this->model->where('post_id', $postId)->first();
+        return $this->model->where('post_id', $postId)->get();
     }
 
-    public function findWithOptions($id)
+    /**
+     * Get polls by user
+     * @param int $userId
+     * @return mixed
+     */
+    public function getByUser(int $userId)
     {
-        return $this->model->with('options')->findOrFail($id);
+        return $this->model->where('utilisateur_id', $userId)->get();
     }
 
-    public function createPollWithOptions($pollData, $optionsData)
+    /**
+     * Count votes by type for a post
+     * @param int $postId
+     * @param string $type
+     * @return int
+     */
+    public function countVotesByType(int $postId, string $type): int
     {
-        return DB::transaction(function () use ($pollData, $optionsData) {
-            $poll = $this->model->create($pollData);
-            
-            foreach ($optionsData as $optionText) {
-                PollOption::create([
-                    'poll_id' => $poll->id,
-                    'text' => $optionText,
-                    'votes' => 0
-                ]);
-            }
-            
-            return $poll;
-        });
+        return $this->model->where('post_id', $postId)
+            ->where('typeVote', $type)
+            ->count();
     }
 }

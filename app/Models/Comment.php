@@ -4,47 +4,62 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Comment extends Model
 {
-    /** @use HasFactory<\Database\Factories\CommentFactory> */
     use HasFactory;
 
-
     protected $fillable = [
-        'content',
-        'user_id',
         'post_id',
+        'auteur_id',
         'parent_id',
-        'upvotes',
-        'downvotes',
+        'contenu',
+        'datePublication',
     ];
 
+    protected $casts = [
+        'datePublication' => 'datetime',
+    ];
 
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
-    
-
-    public function post()
+    /**
+     * Get the post that owns the comment.
+     */
+    public function post(): BelongsTo
     {
         return $this->belongsTo(Post::class);
     }
-    public function parent()
+
+    /**
+     * Get the user that owns the comment.
+     */
+    public function auteur(): BelongsTo
     {
-        return $this->belongsTo(Comment::class, 'parent_id');
+        return $this->belongsTo(User::class, 'auteur_id');
     }
 
-    public function replies()
-    {
-        return $this->hasMany(Comment::class, 'parent_id');
-    }
-
-    public function reports()
+    /**
+     * Get all of the comment's reports.
+     */
+    public function reports(): MorphMany
     {
         return $this->morphMany(Report::class, 'reportable');
     }
-
     
+    /**
+     * Get the parent comment.
+     */
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Comment::class, 'parent_id');
+    }
+    
+    /**
+     * Get the child comments (replies).
+     */
+    public function replies()
+    {
+        return $this->hasMany(Comment::class, 'parent_id')->with('auteur');
+    }
 }
