@@ -36,6 +36,8 @@ Route::middleware('guest')->group(function () {
     Route::post('/forgot-password', [AuthController::class, 'sendPasswordResetLink'])->name('password.email');
     Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])->name('password.reset');
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
+    // Fallback for GET /logout - redirects to home page instead of showing error
+    Route::get('/logout', [AuthController::class, 'handleGetLogout']);
 });
 
 Route::middleware('auth')->group(function () {
@@ -55,6 +57,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/change-password', [UserController::class, 'changePassword']);
     Route::get('/saved-posts', [UserController::class, 'savedPosts'])->name('saved-posts');
     Route::get('/communities', [UserController::class, 'communities'])->name('user.communities');
+    Route::get('/my-communities', [UserController::class, 'myCommunities'])->name('user.my-communities');
     
     // Email verification
     Route::get('/verify-email/{token}', [AuthController::class, 'verifyEmail'])->name('verification.verify');

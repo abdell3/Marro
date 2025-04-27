@@ -6,7 +6,7 @@
                 <!-- Welcome Section -->
                 <div class="bg-white rounded-lg shadow p-6 mb-6">
                     <h1 class="text-2xl font-bold text-gray-800 mb-2">Bienvenue, {{ $user->prenom }}!</h1>
-                    <p class="text-gray-600">Voici un résumé de votre activité sur MAReddit.</p>
+                    <p class="text-gray-600">Voici un résumé de votre activité sur Marro.</p>
                 </div>
                 
                 <!-- Activity Stats -->

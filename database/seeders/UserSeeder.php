@@ -14,7 +14,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create admin user
+        
         User::firstOrCreate(
             ['email' => 'admin@mareddit.com'],
             [
@@ -27,36 +27,36 @@ class UserSeeder extends Seeder
             ]
         );
 
-        // Create moderator user
+        
         User::firstOrCreate(
             ['email' => 'mod@mareddit.com'],
             [
                 'nom' => 'Moderator',
                 'prenom' => 'Test',
                 'password' => Hash::make('password'),
-                'role_id' => 3, // Moderator role
-                'badge_id' => 1, // Nouveau venu badge
+                'role_id' => 3, 
+                'badge_id' => 1, 
                 'email_verified_at' => now(),
             ]
         );
 
-        // Create regular user
+        
         User::firstOrCreate(
             ['email' => 'user@mareddit.com'],
             [
                 'nom' => 'User',
                 'prenom' => 'Test',
                 'password' => Hash::make('password'),
-                'role_id' => 2, // User role
-                'badge_id' => 1, // Nouveau venu badge
+                'role_id' => 2, 
+                'badge_id' => 1, 
                 'email_verified_at' => now(),
             ]
         );
 
-        // Create more users with factory
+        
         User::factory()->count(20)->create([
-            'role_id' => 2, // User role
-            'badge_id' => 1, // Nouveau venu badge
+            'role_id' => 2, 
+            'badge_id' => 1, 
         ]);
     }
 }

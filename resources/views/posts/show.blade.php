@@ -64,12 +64,21 @@
 
                             <!-- Post Actions -->
                             <div class="flex items-center text-gray-500 text-sm border-t border-gray-200 pt-4 mt-4">
-                                <button class="flex items-center hover:text-gray-700 mr-6" onclick="savePost({{ $post->id }})">
+                                @auth
+                                <button id="saveButton" class="flex items-center hover:text-gray-700 mr-6" onclick="savePost({{ $post->id }})">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1 {{ auth()->user()->savedPosts->contains($post->id) ? 'text-red-500 fill-red-500' : '' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                    </svg>
+                                    Sauvegarder
+                                </button>
+                                @else
+                                <button class="flex items-center hover:text-gray-700 mr-6" onclick="alert('Vous devez être connecté pour sauvegarder un post.')">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                                     </svg>
                                     Sauvegarder
                                 </button>
+                                @endauth
                                 <button class="flex items-center hover:text-gray-700 mr-6" onclick="sharePost({{ $post->id }})">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
@@ -390,8 +399,10 @@
             }
             
             function savePost(postId) {
-                // In a real implementation, we would make an AJAX request to the server
                 @auth
+                    const saveButton = document.getElementById('saveButton');
+                    const saveIcon = saveButton.querySelector('svg');
+                    
                     fetch(`/posts/${postId}/save`, {
                         method: 'POST',
                         headers: {
@@ -401,11 +412,15 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            alert(data.message);
+                            if (data.isSaved) {
+                                // Post is saved - add the red color classes
+                                saveIcon.classList.add('text-red-500', 'fill-red-500');
+                            } else {
+                                // Post is unsaved - remove the red color classes
+                                saveIcon.classList.remove('text-red-500', 'fill-red-500');
+                            }
                         }
                     });
-                @else
-                    alert('Vous devez être connecté pour sauvegarder un post.');
                 @endauth
             }
             

@@ -32,12 +32,14 @@ use App\Repositories\TagRepository;
 use App\Repositories\ThreadRepository;
 use App\Repositories\UserRepository;
 use App\Services\Interfaces\AuthServiceInterface;
+use App\Services\Interfaces\BadgeServiceInterface;
 use App\Services\Interfaces\CommentServiceInterface;
 use App\Services\Interfaces\CommunityServiceInterface;
 use App\Services\Interfaces\PostServiceInterface;
 use App\Services\Interfaces\ReportServiceInterface;
 use App\Services\Interfaces\UserServiceInterface;
 use App\Services\AuthService;
+use App\Services\BadgeService;
 use App\Services\CommentService;
 use App\Services\CommunityService;
 use App\Services\PostService;
@@ -74,6 +76,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(CommentServiceInterface::class, CommentService::class);
         $this->app->bind(CommunityServiceInterface::class, CommunityService::class);
         $this->app->bind(ReportServiceInterface::class, ReportService::class);
+        $this->app->bind(BadgeServiceInterface::class, BadgeService::class);
     }
 
     /**

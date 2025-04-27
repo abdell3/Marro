@@ -213,4 +213,20 @@ class AuthController extends Controller
         return redirect()->route('login')
             ->with('success', 'Votre mot de passe a été réinitialisé avec succès.');
     }
+    
+    /**
+     * Handle GET request to logout (fallback for users typing /logout directly)
+     */
+    public function handleGetLogout(Request $request)
+    {
+        // If user is logged in, log them out properly
+        if (Auth::check()) {
+            $this->authService->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
+        
+        // Redirect to home regardless of login status
+        return redirect()->route('home');
+    }
 }

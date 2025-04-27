@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Services\Interfaces\AuthServiceInterface;
+use App\Services\Interfaces\BadgeServiceInterface;
 use App\Services\Interfaces\CommunityServiceInterface;
 use App\Services\Interfaces\PostServiceInterface;
+use App\Observers\UserBadgeObserver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -26,16 +28,29 @@ class CommunityController extends Controller
     protected $authService;
 
     /**
+     * @var BadgeServiceInterface
+     */
+    protected $badgeService;
+
+    /**
+     * @var UserBadgeObserver
+     */
+    protected $badgeObserver;
+
+    /**
      * CommunityController constructor.
      */
     public function __construct(
         CommunityServiceInterface $communityService,
         PostServiceInterface $postService,
-        AuthServiceInterface $authService
+        AuthServiceInterface $authService,
+        BadgeServiceInterface $badgeService
     ) {
         $this->communityService = $communityService;
         $this->postService = $postService;
         $this->authService = $authService;
+        $this->badgeService = $badgeService;
+        $this->badgeObserver = new UserBadgeObserver($badgeService);
         
         // Apply auth middleware for specific actions
         $this->middleware('auth')->except(['index', 'show']);
@@ -112,10 +127,20 @@ class CommunityController extends Controller
             $posts = $posts->sortByDesc('datePublication');
         }
 
+        // Get community members
+        $members = $community->abonnes()->take(10)->get();
+        
+        // Get moderators (users with admin or moderator role who are subscribed to the community)
+        $moderators = $members->filter(function ($user) {
+            return $user->role->role_name === 'admin' || $user->role->role_name === 'moderator';
+        })->take(5);
+
         return view('communities.show', [
             'community' => $community,
             'posts' => $posts,
-            'filter' => $filter
+            'filter' => $filter,
+            'members' => $members,
+            'moderators' => $moderators
         ]);
     }
 
@@ -170,7 +195,7 @@ class CommunityController extends Controller
     /**
      * Subscribe/unsubscribe from a community.
      */
-    public function toggleSubscription($id)
+    public function toggleSubscription($id, Request $request)
     {
         $user = $this->authService->user();
         
@@ -178,6 +203,11 @@ class CommunityController extends Controller
         $result = $user->communities()->toggle($id);
         
         $isSubscribed = count($result['attached']) > 0;
+        
+        // If the user subscribed to a new community, check for badges
+        if ($isSubscribed) {
+            $this->badgeObserver->communityJoined($user);
+        }
         
         if ($request->expectsJson()) {
             return response()->json([

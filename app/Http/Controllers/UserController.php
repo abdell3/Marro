@@ -181,6 +181,19 @@ class UserController extends Controller
     }
     
     /**
+     * Display the user's subscribed communities.
+     */
+    public function myCommunities()
+    {
+        $user = $this->authService->user();
+        $subscribedCommunities = $user->communities;
+
+        return view('users.my-communities', [
+            'communities' => $subscribedCommunities
+        ]);
+    }
+    
+    /**
      * Update user avatar.
      */
     public function updateAvatar(Request $request)
@@ -196,27 +209,108 @@ class UserController extends Controller
 
         $user = $this->authService->user();
         
-        if ($request->hasFile('avatar')) {
-            // Supprimer l'ancien avatar s'il existe
-            if ($user->avatar && file_exists(storage_path('app/public/' . $user->avatar))) {
-                unlink(storage_path('app/public/' . $user->avatar));
+        if ($request->hasFile('avatar') && $request->file('avatar')->isValid()) {
+            try {
+                // Vérifier si le lien symbolique du stockage existe
+                $publicStoragePath = public_path('storage');
+                if (!file_exists($publicStoragePath) || !is_link($publicStoragePath)) {
+                    // Créer ou réparer le lien symbolique
+                    $this->repairStorageLink();
+                }
+                
+                // Assurer que le dossier avatars existe avec les bonnes permissions
+                $avatarsPath = storage_path('app/public/avatars');
+                if (!file_exists($avatarsPath)) {
+                    mkdir($avatarsPath, 0755, true);
+                }
+                
+                // Supprimer l'ancien avatar s'il existe
+                if ($user->avatar) {
+                    $oldAvatarPath = storage_path('app/public/' . $user->avatar);
+                    if (file_exists($oldAvatarPath)) {
+                        @unlink($oldAvatarPath);
+                    }
+                }
+                
+                // Générer un nom de fichier unique
+                $file = $request->file('avatar');
+                $extension = $file->getClientOriginalExtension();
+                $fileName = time() . '_' . uniqid() . '.' . $extension;
+                
+                // Déplacer le fichier vers le stockage
+                $file->move(storage_path('app/public/avatars'), $fileName);
+                $avatarPath = 'avatars/' . $fileName;
+                
+                // Définir les permissions du fichier
+                chmod(storage_path('app/public/avatars/' . $fileName), 0644);
+                
+                // Mettre à jour l'utilisateur
+                $this->userService->updateUser($user->id, [
+                    'avatar' => $avatarPath,
+                ]);
+                
+                // Effacer le cache
+                \Illuminate\Support\Facades\Artisan::call('cache:clear');
+                
+                return redirect()->route('profile.edit')
+                    ->with('success', 'Avatar mis à jour avec succès.');
+            } catch (\Exception $e) {
+                return redirect()->route('profile.edit')
+                    ->with('error', 'Erreur lors de la mise à jour de l\'avatar: ' . $e->getMessage());
             }
-            
-            // Assurer que le dossier avatars existe
-            $avatarsPath = storage_path('app/public/avatars');
-            if (!file_exists($avatarsPath)) {
-                mkdir($avatarsPath, 0755, true);
-            }
-            
-            $avatarPath = $request->file('avatar')->store('avatars', 'public');
-            
-            $this->userService->updateUser($user->id, [
-                'avatar' => $avatarPath,
-            ]);
         }
 
         return redirect()->route('profile.edit')
-            ->with('success', 'Avatar mis à jour avec succès.');
+            ->with('error', 'Aucun fichier d\'image valide n\'a été téléchargé.');
+    }
+    
+    /**
+     * Helper function to repair storage link
+     */
+    private function repairStorageLink()
+    {
+        $publicStoragePath = public_path('storage');
+        $storageAppPublicPath = storage_path('app/public');
+        
+        // Supprimer l'ancien lien s'il existe
+        if (file_exists($publicStoragePath)) {
+            if (is_link($publicStoragePath)) {
+                @unlink($publicStoragePath);
+            } elseif (is_dir($publicStoragePath)) {
+                // Supprimer le dossier récursivement si c'est un dossier
+                $this->rrmdir($publicStoragePath);
+            }
+        }
+        
+        // Créer le lien symbolique
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            // Sur Windows, utiliser artisan
+            \Illuminate\Support\Facades\Artisan::call('storage:link');
+        } else {
+            // Sur Unix/Linux
+            symlink($storageAppPublicPath, $publicStoragePath);
+        }
+        
+        return file_exists($publicStoragePath);
+    }
+    
+    /**
+     * Helper function to recursively remove directories
+     */
+    private function rrmdir($dir) {
+        if (is_dir($dir)) {
+            $objects = scandir($dir);
+            foreach ($objects as $object) {
+                if ($object != "." && $object != "..") {
+                    if (is_dir($dir . "/" . $object)) {
+                        $this->rrmdir($dir . "/" . $object);
+                    } else {
+                        @unlink($dir . "/" . $object);
+                    }
+                }
+            }
+            @rmdir($dir);
+        }
     }
     
     /**

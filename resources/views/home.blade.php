@@ -54,6 +54,19 @@
                                         </a>
                                     </h3>
 
+                                    @if($post->media_path && $post->typeContenu === 'image')
+                                        <div class="mb-3 border border-gray-200 rounded-lg overflow-hidden">
+                                            <img src="{{ asset('storage/' . $post->media_path) }}?v={{ time() }}" alt="{{ $post->titre }}" class="w-full object-contain max-h-[300px]" onerror="this.style.display='none'">
+                                        </div>
+                                    @elseif($post->media_path && $post->typeContenu === 'video')
+                                        <div class="mb-3 border border-gray-200 rounded-lg overflow-hidden">
+                                            <video controls class="w-full max-h-[300px]">
+                                                <source src="{{ asset('storage/' . $post->media_path) }}" type="{{ $post->media_type }}">
+                                                Votre navigateur ne prend pas en charge la lecture de vidéos.
+                                            </video>
+                                        </div>
+                                    @endif
+                                    
                                     <div class="text-gray-700 mb-3">
                                         @if(strlen($post->contenu) > 300)
                                             {{ substr($post->contenu, 0, 300) }}...
@@ -72,9 +85,15 @@
                                             {{ $post->commentaires->count() }} commentaires
                                         </a>
                                         <button class="flex items-center hover:text-gray-700 mr-4" onclick="savePost({{ $post->id }})">
+                                            @auth
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1 {{ auth()->user()->savedPosts->contains($post->id) ? 'text-red-500 fill-red-500' : '' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                            </svg>
+                                            @else
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                                             </svg>
+                                            @endauth
                                             Sauvegarder
                                         </button>
                                         <button class="flex items-center hover:text-gray-700" onclick="sharePost({{ $post->id }})">
@@ -102,44 +121,74 @@
 
         <!-- Sidebar -->
         <div class="w-full md:w-1/4">
-            <!-- Create Post Card -->
-            <div class="bg-white rounded-lg shadow p-4 mb-6">
-                <h3 class="text-lg font-medium mb-4">Créer un post</h3>
-                <a href="{{ route('posts.create') }}" class="block w-full py-2 px-4 bg-red-500 text-white text-center font-medium rounded-full hover:bg-red-600 transition-colors">
-                    Nouveau post
-                </a>
-            </div>
+        <!-- Create Post Card -->
+        <div class="bg-white rounded-lg shadow p-4 mb-6">
+        <h3 class="text-lg font-medium mb-4">Créer un post</h3>
+        <a href="{{ route('posts.create') }}" class="block w-full py-2 px-4 bg-red-500 text-white text-center font-medium rounded-full hover:bg-red-600 transition-colors">
+        Nouveau post
+        </a>
+        </div>
 
-            <!-- Popular Communities -->
-            <div class="bg-white rounded-lg shadow p-4 mb-6">
-                <h3 class="text-lg font-medium mb-4">Communautés populaires</h3>
-                @if($popularCommunities->count() > 0)
-                    <div class="space-y-3">
-                        @foreach($popularCommunities as $community)
-                            <a href="{{ route('communities.show', $community->id) }}" class="flex items-center p-2 hover:bg-gray-50 rounded-lg">
-                                <div class="w-8 h-8 bg-blue-500 rounded-full mr-3 flex items-center justify-center text-white font-bold">
-                                    {{ substr($community->theme_name, 0, 1) }}
-                                </div>
-                                <div class="flex-1">
-                                    <h4 class="font-medium">{{ $community->theme_name }}</h4>
-                                    <p class="text-xs text-gray-500">{{ $community->abonnes->count() }} membres</p>
-                                </div>
-                            </a>
-                        @endforeach
-                    </div>
-                    <a href="{{ route('communities.index') }}" class="block text-center text-blue-600 hover:underline mt-4">
-                        Voir toutes les communautés
-                    </a>
-                @else
-                    <p class="text-gray-500">Aucune communauté disponible.</p>
-                @endif
+        @auth
+        <!-- Subscribed Communities (for logged in users) -->
+        <div class="bg-white rounded-lg shadow p-4 mb-6">
+        <h3 class="text-lg font-medium mb-4">Mes communautés</h3>
+        @if($subscribedCommunities->count() > 0)
+        <div class="space-y-3">
+        @foreach($subscribedCommunities as $community)
+        <a href="{{ route('communities.show', $community->id) }}" class="flex items-center p-2 hover:bg-gray-50 rounded-lg">
+        <div class="w-8 h-8 bg-blue-500 rounded-full mr-3 flex items-center justify-center text-white font-bold">
+            {{ substr($community->theme_name, 0, 1) }}
+        </div>
+        <div class="flex-1">
+        <h4 class="font-medium">{{ $community->theme_name }}</h4>
+            <p class="text-xs text-gray-500">{{ $community->abonnes->count() }} membres</p>
             </div>
+            </a>
+            @endforeach
+        </div>
+        <a href="{{ route('user.my-communities') }}" class="block text-center text-blue-600 hover:underline mt-4">
+        Voir toutes mes communautés
+        </a>
+        @else
+            <p class="text-gray-500 mb-4">Vous n'êtes abonné à aucune communauté.</p>
+                <a href="{{ route('communities.index') }}" class="block w-full py-2 px-4 bg-blue-500 text-white text-center font-medium rounded-full hover:bg-blue-600 transition-colors">
+                            Découvrir des communautés
+                        </a>
+                    @endif
+                </div>
+                @endauth
+
+                <!-- Popular Communities -->
+                <div class="bg-white rounded-lg shadow p-4 mb-6">
+                    <h3 class="text-lg font-medium mb-4">Communautés populaires</h3>
+                    @if($popularCommunities->count() > 0)
+                        <div class="space-y-3">
+                            @foreach($popularCommunities as $community)
+                                <a href="{{ route('communities.show', $community->id) }}" class="flex items-center p-2 hover:bg-gray-50 rounded-lg">
+                                    <div class="w-8 h-8 bg-blue-500 rounded-full mr-3 flex items-center justify-center text-white font-bold">
+                                        {{ substr($community->theme_name, 0, 1) }}
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="font-medium">{{ $community->theme_name }}</h4>
+                                        <p class="text-xs text-gray-500">{{ $community->abonnes->count() }} membres</p>
+                                    </div>
+                                </a>
+                            @endforeach
+                        </div>
+                        <a href="{{ route('communities.index') }}" class="block text-center text-blue-600 hover:underline mt-4">
+                            Voir toutes les communautés
+                        </a>
+                    @else
+                        <p class="text-gray-500">Aucune communauté disponible.</p>
+                    @endif
+                </div>
 
             <!-- About Card -->
             <div class="bg-white rounded-lg shadow p-4">
-                <h3 class="text-lg font-medium mb-3">À propos de MAReddit</h3>
+                <h3 class="text-lg font-medium mb-3">À propos de Marro</h3>
                 <p class="text-gray-700 mb-4">
-                    MAReddit est une plateforme de discussion communautaire où vous pouvez partager vos idées, découvrir des contenus intéressants et participer à des débats sur divers sujets.
+                    Marro est une plateforme de discussion communautaire où vous pouvez partager vos idées, découvrir des contenus intéressants et participer à des débats sur divers sujets.
                 </p>
                 <div class="flex justify-between text-sm">
                     <div class="text-center">
@@ -162,15 +211,51 @@
     <x-slot name="scripts">
         <script>
             function votePost(postId, voteType) {
-                // In a real implementation, we would make an AJAX request to the server
-                console.log(`Vote ${voteType} for post ${postId}`);
-                alert(`Vous devez être connecté pour voter.`);
+                @auth
+                    fetch(`/posts/${postId}/vote`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ vote_type: voteType })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Reload the page to show updated votes
+                            window.location.reload();
+                        } else {
+                            alert(data.message);
+                        }
+                    });
+                @else
+                    alert('Vous devez être connecté pour voter.');
+                @endauth
             }
             
             function savePost(postId) {
-                // In a real implementation, we would make an AJAX request to the server
-                console.log(`Save post ${postId}`);
-                alert(`Vous devez être connecté pour sauvegarder un post.`);
+                @auth
+                    fetch(`/posts/${postId}/save`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Give feedback that the post was saved
+                            if (data.isSaved) {
+                                alert('Post sauvegardé.');
+                            } else {
+                                alert('Post retiré des favoris.');
+                            }
+                        }
+                    });
+                @else
+                    alert('Vous devez être connecté pour sauvegarder un post.');
+                @endauth
             }
             
             function sharePost(postId) {

@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     
     <title>{{ config('app.name', 'Marro') }} - {{ $title ?? 'Accueil' }}</title>
     
@@ -220,7 +221,7 @@
                             <input 
                                 type="text" 
                                 name="query" 
-                                placeholder="Rechercher sur MAReddit..." 
+                                placeholder="Rechercher sur Marro..." 
                                 class="w-full bg-gray-100 rounded-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-red-300"
                             >
                             <button type="submit" class="absolute right-3 top-2.5 text-gray-500">
@@ -239,7 +240,7 @@
                             <button class="user-dropdown-button" id="userMenuButton">
                                 <div class="user-avatar">
                                     @if(Auth::user()->avatar)
-                                        <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="{{ Auth::user()->prenom }} {{ Auth::user()->nom }}" class="w-full h-full object-cover">
+                                        <img src="{{ asset('storage/' . Auth::user()->avatar) }}?v={{ time() }}" alt="{{ Auth::user()->prenom }} {{ Auth::user()->nom }}" class="w-full h-full object-cover" onerror="this.src='{{ asset('images/default-avatar.png') }}'; this.onerror=''">
                                     @else
                                         <span class="text-sm font-medium">{{ substr(Auth::user()->prenom, 0, 1) . substr(Auth::user()->nom, 0, 1) }}</span>
                                     @endif
@@ -256,7 +257,7 @@
                                     <a href="{{ route('profile') }}" class="flex items-center">
                                         <div class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center mr-3 overflow-hidden">
                                             @if(Auth::user()->avatar)
-                                                <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="{{ Auth::user()->prenom }} {{ Auth::user()->nom }}" class="w-full h-full object-cover">
+                                                <img src="{{ asset('storage/' . Auth::user()->avatar) }}?v={{ time() }}" alt="{{ Auth::user()->prenom }} {{ Auth::user()->nom }}" class="w-full h-full object-cover" onerror="this.src='{{ asset('images/default-avatar.png') }}'; this.onerror=''">
                                             @else
                                                 <span class="text-sm font-medium">{{ substr(Auth::user()->prenom, 0, 1) . substr(Auth::user()->nom, 0, 1) }}</span>
                                             @endif
@@ -336,9 +337,10 @@
                                     Paramètres
                                 </a>
                                 
-                                <form action="{{ route('logout') }}" method="POST">
+                                <!-- Bouton de déconnexion -->
+                                <form action="{{ route('logout') }}" method="POST" class="m-0 p-0" id="logout-form">
                                     @csrf
-                                    <button type="submit" class="dropdown-item w-full text-left">
+                                    <button type="submit" class="w-full text-left dropdown-item">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                                         </svg>
@@ -361,7 +363,7 @@
                         <input 
                             type="text" 
                             name="query" 
-                            placeholder="Rechercher sur MAReddit..." 
+                            placeholder="Rechercher sur Marro..." 
                             class="w-full bg-gray-100 rounded-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-red-300"
                         >
                         <button type="submit" class="absolute right-3 top-2.5 text-gray-500">
@@ -382,7 +384,7 @@
     <footer class="bg-white shadow-sm mt-auto">
         <div class="container mx-auto px-4 py-4">
             <div class="flex flex-col md:flex-row justify-between items-center">
-                <p class="text-gray-600 text-sm">&copy; {{ date('Y') }} MAReddit. Tous droits réservés.</p>
+                <p class="text-gray-600 text-sm">&copy; {{ date('Y') }} Marro. Tous droits réservés.</p>
                 <div class="mt-3 md:mt-0 flex space-x-4">
                     <a href="#" class="text-gray-600 hover:text-red-500 text-sm">À propos</a>
                     <a href="#" class="text-gray-600 hover:text-red-500 text-sm">Conditions d'utilisation</a>
@@ -413,6 +415,17 @@
                     if (!userMenuButton.contains(event.target) && !userDropdownMenu.contains(event.target)) {
                         userDropdownMenu.classList.remove('show-dropdown');
                     }
+                });
+            }
+            
+            // Gestion du formulaire de déconnexion
+            const logoutForm = document.getElementById('logout-form');
+            if (logoutForm) {
+                logoutForm.addEventListener('submit', function(event) {
+                    // Prevent any caching or redirect issues
+                    event.preventDefault();
+                    // Submit the form programmatically
+                    this.submit();
                 });
             }
             

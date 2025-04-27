@@ -8,7 +8,7 @@
                             type="text" 
                             name="query" 
                             value="{{ $query }}" 
-                            placeholder="Rechercher sur MAReddit..." 
+                            placeholder="Rechercher sur Marro..." 
                             class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-full px-5 py-3 focus:outline-none focus:ring-2 focus:ring-red-300"
                         >
                         <button 

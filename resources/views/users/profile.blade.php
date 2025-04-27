@@ -1,7 +1,20 @@
 <x-layout.app title="Profil">
     <div class="max-w-4xl mx-auto">
         <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h1 class="text-2xl font-bold text-gray-800 mb-6">Votre profil</h1>
+            <div class="flex items-center mb-6">
+                <div class="w-20 h-20 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden mr-4">
+                    @if($user->avatar)
+                        <img src="{{ asset('storage/' . $user->avatar) }}" alt="{{ $user->prenom }} {{ $user->nom }}" class="w-full h-full object-cover" id="profile-avatar">
+                    @else
+                        <span class="text-2xl font-medium">{{ substr($user->prenom, 0, 1) . substr($user->nom, 0, 1) }}</span>
+                    @endif
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">{{ $user->prenom }} {{ $user->nom }}</h1>
+                    <p class="text-gray-600">{{ $user->email }}</p>
+                    <a href="{{ route('profile.edit') }}" class="text-sm text-red-600 hover:underline mt-1 inline-block">Modifier votre avatar</a>
+                </div>
+            </div>
             
             @if (session('success'))
                 <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">

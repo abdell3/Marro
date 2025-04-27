@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\User;
 use App\Repositories\Interfaces\UserRepositoryInterface;
 use App\Services\Interfaces\AuthServiceInterface;
+use App\Services\Interfaces\BadgeServiceInterface;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
@@ -16,12 +17,19 @@ class AuthService implements AuthServiceInterface
     protected $userRepository;
 
     /**
+     * @var BadgeServiceInterface
+     */
+    protected $badgeService;
+
+    /**
      * AuthService constructor.
      * @param UserRepositoryInterface $userRepository
+     * @param BadgeServiceInterface $badgeService
      */
-    public function __construct(UserRepositoryInterface $userRepository)
+    public function __construct(UserRepositoryInterface $userRepository, BadgeServiceInterface $badgeService)
     {
         $this->userRepository = $userRepository;
+        $this->badgeService = $badgeService;
     }
 
     /**
@@ -44,6 +52,9 @@ class AuthService implements AuthServiceInterface
         
         // Create user
         $user = $this->userRepository->create($data);
+        
+        // Assign welcome badge
+        $this->badgeService->assignWelcomeBadge($user);
         
         // Login the user
         Auth::login($user);

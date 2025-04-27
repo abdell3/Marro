@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Services\Interfaces\AuthServiceInterface;
+use App\Services\Interfaces\BadgeServiceInterface;
 use App\Services\Interfaces\CommentServiceInterface;
+use App\Observers\UserBadgeObserver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -20,14 +22,27 @@ class CommentController extends Controller
     protected $authService;
 
     /**
+     * @var BadgeServiceInterface
+     */
+    protected $badgeService;
+
+    /**
+     * @var UserBadgeObserver
+     */
+    protected $badgeObserver;
+
+    /**
      * CommentController constructor.
      */
     public function __construct(
         CommentServiceInterface $commentService,
-        AuthServiceInterface $authService
+        AuthServiceInterface $authService,
+        BadgeServiceInterface $badgeService
     ) {
         $this->commentService = $commentService;
         $this->authService = $authService;
+        $this->badgeService = $badgeService;
+        $this->badgeObserver = new UserBadgeObserver($badgeService);
         
         // Apply auth middleware for all actions
         $this->middleware('auth');
@@ -58,6 +73,9 @@ class CommentController extends Controller
             'parent_id' => $request->input('parent_id'),
             'contenu' => $request->input('contenu'),
         ]);
+
+        // Check for badges after creating a comment
+        $this->badgeObserver->commentCreated($comment);
 
         return redirect()->route('posts.show', $request->input('post_id'))
             ->with('success', 'Commentaire ajouté avec succès.')
@@ -100,6 +118,9 @@ class CommentController extends Controller
             'parent_id' => $id,
             'contenu' => $request->input('contenu'),
         ]);
+
+        // Check for badges after creating a reply (which is also a comment)
+        $this->badgeObserver->commentCreated($comment);
 
         return redirect()->route('posts.show', $parentComment->post_id)
             ->with('success', 'Réponse ajoutée avec succès.')

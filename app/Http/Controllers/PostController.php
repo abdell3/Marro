@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Services\Interfaces\AuthServiceInterface;
+use App\Services\Interfaces\BadgeServiceInterface;
 use App\Services\Interfaces\CommentServiceInterface;
 use App\Services\Interfaces\CommunityServiceInterface;
 use App\Services\Interfaces\PostServiceInterface;
 use App\Services\Interfaces\ReportTypeServiceInterface;
 use App\Services\Interfaces\TagServiceInterface;
+use App\Observers\UserBadgeObserver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -46,16 +48,29 @@ class PostController extends Controller
     /**
      * PostController constructor.
      */
+    /**
+     * @var BadgeServiceInterface
+     */
+    protected $badgeService;
+
+    /**
+     * @var UserBadgeObserver
+     */
+    protected $badgeObserver;
+
     public function __construct(
         PostServiceInterface $postService,
         CommentServiceInterface $commentService,
         AuthServiceInterface $authService,
-        CommunityServiceInterface $communityService
+        CommunityServiceInterface $communityService,
+        BadgeServiceInterface $badgeService
     ) {
         $this->postService = $postService;
         $this->commentService = $commentService;
         $this->authService = $authService;
         $this->communityService = $communityService;
+        $this->badgeService = $badgeService;
+        $this->badgeObserver = new UserBadgeObserver($badgeService);
         
         // Apply auth middleware for most actions
         $this->middleware('auth')->except(['show']);
@@ -113,28 +128,56 @@ class PostController extends Controller
         
         // Handle media upload
         if ($request->hasFile('media') && $request->file('media')->isValid()) {
-            $file = $request->file('media');
-            $fileType = $file->getMimeType();
-            
-            // Validate file type based on selected post type
-            $typeContenu = $request->input('typeContenu');
-            
-            if ($typeContenu === 'image' && !str_starts_with($fileType, 'image/')) {
+            try {
+                $file = $request->file('media');
+                $fileType = $file->getMimeType();
+                
+                // Validate file type based on selected post type
+                $typeContenu = $request->input('typeContenu');
+                
+                if ($typeContenu === 'image' && !str_starts_with($fileType, 'image/')) {
+                    return redirect()->back()
+                        ->withErrors(['media' => 'Le fichier doit être une image.'])
+                        ->withInput();
+                }
+                
+                if ($typeContenu === 'video' && !str_starts_with($fileType, 'video/')) {
+                    return redirect()->back()
+                        ->withErrors(['media' => 'Le fichier doit être une vidéo.'])
+                        ->withInput();
+                }
+                
+                // Vérifier et créer les dossiers de stockage si nécessaire
+                $publicStoragePath = public_path('storage');
+                if (!file_exists($publicStoragePath)) {
+                    // Créer le lien symbolique si nécessaire
+                    \Illuminate\Support\Facades\Artisan::call('storage:link');
+                }
+                
+                $subFolder = $typeContenu === 'image' ? 'images' : 'videos';
+                $storageFolder = storage_path('app/public/posts/' . $subFolder);
+                
+                if (!file_exists($storageFolder)) {
+                    mkdir($storageFolder, 0755, true);
+                }
+                
+                // Store file based on type - avec gestion des erreurs
+                $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $mediaPath = 'posts/' . $subFolder . '/' . $fileName;
+                
+                // Déplacer le fichier manuellement
+                if ($file->move(storage_path('app/public/posts/' . $subFolder), $fileName)) {
+                    $mediaType = $fileType;
+                } else {
+                    return redirect()->back()
+                        ->withErrors(['media' => 'Erreur lors du téléchargement du fichier. Veuillez réessayer.'])
+                        ->withInput();
+                }
+            } catch (\Exception $e) {
                 return redirect()->back()
-                    ->withErrors(['media' => 'Le fichier doit être une image.'])
+                    ->withErrors(['media' => 'Erreur: ' . $e->getMessage()])
                     ->withInput();
             }
-            
-            if ($typeContenu === 'video' && !str_starts_with($fileType, 'video/')) {
-                return redirect()->back()
-                    ->withErrors(['media' => 'Le fichier doit être une vidéo.'])
-                    ->withInput();
-            }
-            
-            // Store file based on type
-            $subFolder = $typeContenu === 'image' ? 'images' : 'videos';
-            $mediaPath = $file->store('posts/' . $subFolder, 'public');
-            $mediaType = $fileType;
         }
 
         $post = $this->postService->createPost([
@@ -146,6 +189,9 @@ class PostController extends Controller
             'community_id' => $request->input('community_id'),
             'auteur_id' => $user->id,
         ]);
+
+        // Check for badges after creating a post
+        $this->badgeObserver->created($post);
 
         return redirect()->route('posts.show', $post->id)
             ->with('success', 'Post créé avec succès.');
@@ -159,8 +205,8 @@ class PostController extends Controller
         $post = $this->postService->getPostById($id);
         $comments = $this->commentService->getCommentsByPost($id);
         
-        // Charger les auteurs pour tous les commentaires
-        $comments->load('auteur');
+        // Les auteurs sont déjà chargés dans le repository avec ->with(['auteur', 'replies.auteur'])
+        // Pas besoin d'utiliser load() ici
 
         return view('posts.show', [
             'post' => $post,
@@ -227,39 +273,66 @@ class PostController extends Controller
         
         // Handle media upload
         if ($request->hasFile('media') && $request->file('media')->isValid()) {
-            $file = $request->file('media');
-            $fileType = $file->getMimeType();
-            
-            // Validate file type based on selected post type
-            $typeContenu = $request->input('typeContenu');
-            
-            if ($typeContenu === 'image' && !str_starts_with($fileType, 'image/')) {
-                return redirect()->back()
-                    ->withErrors(['media' => 'Le fichier doit être une image.'])
-                    ->withInput();
-            }
-            
-            if ($typeContenu === 'video' && !str_starts_with($fileType, 'video/')) {
-                return redirect()->back()
-                    ->withErrors(['media' => 'Le fichier doit être une vidéo.'])
-                    ->withInput();
-            }
-            
-            // Delete old media if exists
-            if ($post->media_path) {
-                $oldMediaPath = storage_path('app/public/' . $post->media_path);
-                if (file_exists($oldMediaPath)) {
-                    unlink($oldMediaPath);
+            try {
+                $file = $request->file('media');
+                $fileType = $file->getMimeType();
+                
+                // Validate file type based on selected post type
+                $typeContenu = $request->input('typeContenu');
+                
+                if ($typeContenu === 'image' && !str_starts_with($fileType, 'image/')) {
+                    return redirect()->back()
+                        ->withErrors(['media' => 'Le fichier doit être une image.'])
+                        ->withInput();
                 }
+                
+                if ($typeContenu === 'video' && !str_starts_with($fileType, 'video/')) {
+                    return redirect()->back()
+                        ->withErrors(['media' => 'Le fichier doit être une vidéo.'])
+                        ->withInput();
+                }
+                
+                // Vérifier et créer les dossiers de stockage si nécessaire
+                $publicStoragePath = public_path('storage');
+                if (!file_exists($publicStoragePath)) {
+                    // Créer le lien symbolique si nécessaire
+                    \Illuminate\Support\Facades\Artisan::call('storage:link');
+                }
+                
+                $subFolder = $typeContenu === 'image' ? 'images' : 'videos';
+                $storageFolder = storage_path('app/public/posts/' . $subFolder);
+                
+                if (!file_exists($storageFolder)) {
+                    mkdir($storageFolder, 0755, true);
+                }
+                
+                // Delete old media if exists
+                if ($post->media_path) {
+                    $oldMediaPath = storage_path('app/public/' . $post->media_path);
+                    if (file_exists($oldMediaPath)) {
+                        unlink($oldMediaPath);
+                    }
+                }
+                
+                // Store new file based on type - avec gestion des erreurs
+                $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $mediaPath = 'posts/' . $subFolder . '/' . $fileName;
+                
+                // Déplacer le fichier manuellement
+                if ($file->move(storage_path('app/public/posts/' . $subFolder), $fileName)) {
+                    // Add to update data
+                    $data['media_path'] = $mediaPath;
+                    $data['media_type'] = $fileType;
+                } else {
+                    return redirect()->back()
+                        ->withErrors(['media' => 'Erreur lors du téléchargement du fichier. Veuillez réessayer.'])
+                        ->withInput();
+                }
+            } catch (\Exception $e) {
+                return redirect()->back()
+                    ->withErrors(['media' => 'Erreur: ' . $e->getMessage()])
+                    ->withInput();
             }
-            
-            // Store new file based on type
-            $subFolder = $typeContenu === 'image' ? 'images' : 'videos';
-            $mediaPath = $file->store('posts/' . $subFolder, 'public');
-            
-            // Add to update data
-            $data['media_path'] = $mediaPath;
-            $data['media_type'] = $fileType;
         } else if ($request->has('remove_media') && $request->input('remove_media') == 1) {
             // Remove existing media if requested
             if ($post->media_path) {
@@ -319,6 +392,12 @@ class PostController extends Controller
         $voteType = $request->input('vote_type');
 
         $result = $this->postService->voteOnPost($id, $user->id, $voteType);
+
+        if ($result && $voteType === 'upvote') {
+            // Check if the post author qualifies for new badges
+            $post = $this->postService->getPostById($id);
+            $this->badgeObserver->postUpvoted($post);
+        }
 
         return response()->json([
             'success' => $result,

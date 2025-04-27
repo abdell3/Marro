@@ -43,9 +43,9 @@
 
             <!-- About Card -->
             <div class="bg-white rounded-lg shadow p-4">
-                <h3 class="text-lg font-medium mb-3">À propos de MAReddit</h3>
+                <h3 class="text-lg font-medium mb-3">À propos de Marro</h3>
                 <p class="text-gray-700 mb-4">
-                    MAReddit est une plateforme de discussion communautaire où vous pouvez partager vos idées, découvrir des contenus intéressants et participer à des débats sur divers sujets.
+                    Marro est une plateforme de discussion communautaire où vous pouvez partager vos idées, découvrir des contenus intéressants et participer à des débats sur divers sujets.
                 </p>
                 <div class="flex justify-between text-sm">
                     <div class="text-center">

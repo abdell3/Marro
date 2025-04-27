@@ -53,9 +53,16 @@ class HomeController extends Controller
             // Get popular communities for sidebar
             $popularCommunities = $this->communityService->getPopularCommunities(5);
             
+            // If user is logged in, get their subscribed communities
+            $subscribedCommunities = collect();
+            if (auth()->check()) {
+                $subscribedCommunities = auth()->user()->communities()->take(5)->get();
+            }
+            
             return view('home', [
                 'posts' => $posts,
                 'popularCommunities' => $popularCommunities,
+                'subscribedCommunities' => $subscribedCommunities,
                 'filter' => $filter
             ]);
         } catch (\Exception $e) {
@@ -63,6 +70,7 @@ class HomeController extends Controller
             return view('home', [
                 'posts' => collect(),
                 'popularCommunities' => collect(),
+                'subscribedCommunities' => collect(),
                 'filter' => 'latest'
             ]);
         }

@@ -184,6 +184,64 @@
                     </div>
                 </div>
                 
+                <!-- Moderators -->
+                @auth
+                <div class="bg-white rounded-lg shadow p-4 mb-6">
+                    <h3 class="text-lg font-medium mb-3">Modérateurs</h3>
+                    @if($moderators->count() > 0)
+                        <div class="space-y-3">
+                            @foreach($moderators as $moderator)
+                                <div class="flex items-center p-2">
+                                    <div class="w-8 h-8 bg-green-500 rounded-full mr-3 flex items-center justify-center text-white font-bold overflow-hidden">
+                                        @if($moderator->avatar)
+                                            <img src="{{ asset('storage/' . $moderator->avatar) }}" alt="{{ $moderator->prenom }} {{ $moderator->nom }}" class="w-full h-full object-cover">
+                                        @else
+                                            {{ substr($moderator->prenom, 0, 1) . substr($moderator->nom, 0, 1) }}
+                                        @endif
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">{{ $moderator->prenom }} {{ $moderator->nom }}</div>
+                                        <div class="text-xs text-gray-500">{{ $moderator->role->role_name }}</div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-gray-500">Aucun modérateur trouvé.</p>
+                    @endif
+                </div>
+
+                <!-- Members -->
+                <div class="bg-white rounded-lg shadow p-4 mb-6">
+                    <h3 class="text-lg font-medium mb-3">Membres ({{ $community->abonnes->count() }})</h3>
+                    @if($members->count() > 0)
+                        <div class="grid grid-cols-2 gap-2">
+                            @foreach($members as $member)
+                                <div class="flex items-center p-2">
+                                    <div class="w-6 h-6 bg-gray-300 rounded-full mr-2 flex items-center justify-center text-white font-bold overflow-hidden">
+                                        @if($member->avatar)
+                                            <img src="{{ asset('storage/' . $member->avatar) }}" alt="{{ $member->prenom }} {{ $member->nom }}" class="w-full h-full object-cover">
+                                        @else
+                                            <span class="text-xs">{{ substr($member->prenom, 0, 1) }}</span>
+                                        @endif
+                                    </div>
+                                    <div class="text-sm truncate">
+                                        {{ $member->prenom }} {{ $member->nom }}
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                        @if($community->abonnes->count() > 10)
+                            <div class="text-center mt-3">
+                                <button class="text-sm text-blue-600 hover:underline">Voir tous les membres</button>
+                            </div>
+                        @endif
+                    @else
+                        <p class="text-gray-500">Aucun membre trouvé.</p>
+                    @endif
+                </div>
+                @endauth
+                
                 <!-- Community Rules -->
                 <div class="bg-white rounded-lg shadow p-4">
                     <h3 class="text-lg font-medium mb-3">Règles de la communauté</h3>
